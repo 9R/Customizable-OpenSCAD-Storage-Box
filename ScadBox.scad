@@ -12,8 +12,8 @@ WALL_THICKNESS = 1.5;// Wall Thickness
 
 POST_OFFSET=10;
 
-module box () {
-	linear_extrude( BOX_H )
+module box_base() {
+	linear_extrude( BOX_H-BOX_RIM )
 		difference(){
 			offset(r=CORNER_RADIUS) 
 				square( [BOX_W, BOX_L], center=true );
@@ -33,19 +33,19 @@ module box () {
 		};
 	p_w = BOX_W - POST_OFFSET;
 	p_l = BOX_L - POST_OFFSET;
-
-  //toprim
+};
+module box_rim () {
 	difference(){
 		hull(){
 		  //upper face
-			translate([0,0,BOX_H]){
+			translate([0,0,-BOX_RIM/2]){
 				linear_extrude(BOX_RIM/2){
 					offset(r=CORNER_RADIUS)	square( [BOX_W+BOX_RIM, BOX_L+BOX_RIM], center=true );
 				};
 			};
 			//lower face
-			translate([0,0,BOX_H-BOX_RIM]){
-				linear_extrude(1){
+			translate([0,0,-BOX_RIM]){
+				linear_extrude(BOX_RIM/2){
 					offset(r=CORNER_RADIUS) 
 						square( [BOX_W, BOX_L], center=true );
 				};
@@ -53,12 +53,13 @@ module box () {
 		};
 		//cutout
 		union(){
-			translate ([0,0,BOX_H]) {
+			translate ([0,0,-BOX_RIM/2]) {
 				linear_extrude(BOX_H){
 					offset(r=CORNER_RADIUS) square([BOX_W+BOX_RIM/4,BOX_L+BOX_RIM/4],center=true);
 				};
 			};
-			linear_extrude(BOX_H*10){
+			translate([0,0,-BOX_RIM])
+			linear_extrude(BOX_H){
 				offset( r= CORNER_RADIUS - WALL_THICKNESS )
 					square( [BOX_W-WALL_THICKNESS, BOX_L-WALL_THICKNESS], center=true );
 			};
@@ -66,4 +67,8 @@ module box () {
 	};
 };
 
-box();
+union () {
+box_base();
+translate([0,0,BOX_H])
+box_rim();
+};
