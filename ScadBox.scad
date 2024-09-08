@@ -14,6 +14,9 @@ BOX_RIM = 3;
 
 BOX_FLOOR_H = 1;
 
+DIVISION_L =2;
+DIVISION_W =4;
+
 WALL_THICKNESS = 1.5;// Wall Thickness
 
 POST_OFFSET=10;
@@ -105,20 +108,35 @@ module fixture_cutout(offset) {
 
 };
 
+module division(x,y) {
+  step_x=BOX_W/x ;
+	for (i=[1:x-1]) {
+#	translate ([-BOX_W/2+i*step_x,0,BOX_H/2])
+		cube([WALL_THICKNESS,BOX_L,BOX_H-BOX_RIM-1],center=true);
+		};
+  step_y=BOX_L/y ;
+	for (i=[1:y-1]) {
+#	translate ([0,-BOX_L/2+i*step_y,BOX_H/2])
+		cube([BOX_W,WALL_THICKNESS,BOX_H-BOX_RIM-1],center=true);
+		};
+};
+
 f_offset = BOX_L/2 + CORNER_RADIUS;
 coordinates = [ [20,f_offset],[-25,f_offset]];
 
+
 difference (){
 	union () {
-	  //base
+		//base
 		box_base();
-		
+
 		//top rim
 		translate([0,0,BOX_H]) {
-!box_rim();
+			box_rim();
 		};
+			division(DIVISION_L,DIVISION_W);
 
-    //fixtures
+		//fixtures
 		for (i = coordinates)
 			translate (i) lock_fixture();
 		mirror ([0,1,0]){
