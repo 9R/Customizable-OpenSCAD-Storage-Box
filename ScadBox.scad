@@ -1,23 +1,33 @@
 $fn=20;
 
-BOX_L_OUTER = 165;
-BOX_W_OUTER = 120;
-BOX_H_OUTER =  22;
+/*[Dimensions]*/
+// Length in mm
+BOX_L_OUTER = 165; //[60:5:300]
+// Width in mm
+BOX_W_OUTER = 120; //[60:5:300]
+// Height in mm
+BOX_H_OUTER =  22; //[60:5:300]
+// Corner Radius in mm
+CORNER_RADIUS = 2; //[1:1:10]
+// Top Rim in mm 
+BOX_RIM = 3; //[3:1:10]
+// Outer Wall Thickness
+WALL_THICKNESS = 1.5;
+// Inner Wall Thickness
+DIVIDER_THICKNESS = 1;
+// Floor Thickness
+FLOOR_THICKNESS = 1;
 
-CORNER_RADIUS = 2; // Radius of corners
+/*[Divisions]*/
+//number of divisions on the long edge
+DIVISIONS_L =1;
+//number of divisions on the short edge
+DIVISIONS_W =3;
 
+/*[Hidden]*/
 BOX_L = BOX_L_OUTER-2*CORNER_RADIUS; // Box Width
 BOX_W = BOX_W_OUTER-2*CORNER_RADIUS; // Box Length
 BOX_H = BOX_H_OUTER; // Box Height
-
-BOX_RIM = 3;
-
-BOX_FLOOR_H = 1;
-
-DIVISION_L =2;
-DIVISION_W =4;
-
-WALL_THICKNESS = 1.5;// Wall Thickness
 
 POST_OFFSET=10;
 
@@ -37,7 +47,7 @@ module box_base() {
 	translate ( [-BOX_W/2, -BOX_L/2] ) {
 		hull(){
 			for (i = coordinates) {
-				translate(i) cylinder(r=CORNER_RADIUS,h=BOX_FLOOR_H);
+				translate(i) cylinder(r=CORNER_RADIUS,h=FLOOR_THICKNESS);
 			};
 		};
 	};
@@ -70,7 +80,7 @@ module box_rim () {
 				};
 			};
 			//lower
-			translate([0,0,-BOX_RIM*2])
+			translate([0,0,-BOX_H/2])
 				linear_extrude(BOX_H){
 					offset( r= CORNER_RADIUS - WALL_THICKNESS )
 						square( [BOX_W-WALL_THICKNESS, BOX_L-WALL_THICKNESS], center=true );
@@ -109,15 +119,15 @@ module fixture_cutout(offset) {
 };
 
 module division(x,y) {
-  step_x=BOX_W/x ;
-	for (i=[1:x-1]) {
-#	translate ([-BOX_W/2+i*step_x,0,BOX_H/2])
-		cube([WALL_THICKNESS,BOX_L,BOX_H-BOX_RIM-1],center=true);
+  step_x=BOX_W/(x+1) ;
+	for (i=[1:x]) {
+	translate ([-BOX_W/2+i*step_x,0,BOX_H/2])
+		cube([DIVIDER_THICKNESS,BOX_L,BOX_H-BOX_RIM-1],center=true);
 		};
-  step_y=BOX_L/y ;
-	for (i=[1:y-1]) {
-#	translate ([0,-BOX_L/2+i*step_y,BOX_H/2])
-		cube([BOX_W,WALL_THICKNESS,BOX_H-BOX_RIM-1],center=true);
+  step_y=BOX_L/(y+1) ;
+	for (i=[1:y]) {
+	translate ([0,-BOX_L/2+i*step_y,BOX_H/2])
+		cube([BOX_W,DIVIDER_THICKNESS,BOX_H-BOX_RIM-1],center=true);
 		};
 };
 
@@ -134,7 +144,7 @@ difference (){
 		translate([0,0,BOX_H]) {
 			box_rim();
 		};
-			division(DIVISION_L,DIVISION_W);
+			division(DIVISIONS_L,DIVISIONS_W);
 
 		//fixtures
 		for (i = coordinates)
@@ -145,4 +155,7 @@ difference (){
 		};
 	};
 	fixture_cutout(f_offset);
+	mirror ([0,1,0]){
+		fixture_cutout(f_offset);
+	};
 };
