@@ -9,6 +9,8 @@ BOX_W_OUTER = 120; //[60:5:300]
 BOX_H_OUTER =  22; //[60:5:300]
 // Corner Radius in mm
 CORNER_RADIUS = 2; //[1:1:10]
+// Add a top rim
+RIM = true;
 // Top Rim in mm 
 BOX_RIM = 3; //[3:1:10]
 // Outer Wall Thickness
@@ -17,6 +19,8 @@ WALL_THICKNESS = 1.5;
 DIVIDER_THICKNESS = 1;
 // Floor Thickness
 FLOOR_THICKNESS = 1;
+// Internal or External Lock
+INTERNAL_LOCK = false;
 
 /*[Divisions]*/
 //number of divisions on the long edge
@@ -36,7 +40,8 @@ BOX_H = BOX_H_OUTER; // Box Height
 POST_OFFSET=10;
 
 module box_base() {
-	linear_extrude( BOX_H-BOX_RIM )
+  ext_h = RIM ? BOX_H-BOX_RIM : BOX_H;
+  linear_extrude( ext_h )
 		difference(){
 			offset(r=CORNER_RADIUS) 
 				square( [BOX_W , BOX_L ], center=true );
@@ -145,27 +150,48 @@ module division(x,y) {
 offset_fixture_position = BOX_L/2 + CORNER_RADIUS;
 coordinates = [ [20,offset_fixture_position],[-25,offset_fixture_position]];
 
-difference (){
-	union () {
-		//base
-		box_base();
+//box
+union() {
+	difference (){
+		union () {
+			//create base shape
+			box_base();
 
-		//top rim
-		translate([0,0,BOX_H]) {
-			box_rim();
-		};
+			//add top rim
+			if (RIM){
+				translate([0,0,BOX_H]) {
+					box_rim();
+				};
+			};
+
+			//add division
 			division(DIVISIONS_L,DIVISIONS_W);
+		};
 
-		//fixtures
-		for (i = coordinates)
-			translate (i) lock_fixture();
-		mirror ([0,1,0]){
-			for (i = coordinates)
-				translate (i) lock_fixture();
+		//make space for locking mechanism
+		if (INTERNAL_LOCK) {
+			//TODO
+		}
+		else {
+			lock_cutout(offset_fixture_position);
+			mirror ([0,1,0]){
+				lock_cutout(offset_fixture_position);
+			}
 		};
 	};
-	lock_cutout(offset_fixture_position);
-	mirror ([0,1,0]){
-		lock_cutout(offset_fixture_position);
+
+	//add lock fixtures
+	if (INTERNAL_LOCK) {
+		//TODO
+	}
+	else {
+		for (i = coordinates) {
+			translate (i) lock_fixture();
+		}
+		mirror ([0,1,0]){
+			for (i = coordinates) {
+				translate (i) lock_fixture();
+			};
+		};
 	};
 };
