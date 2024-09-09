@@ -89,15 +89,16 @@ module box_rim () {
 	};
 };
 
-module lock_fixture() {
+module lock_fixture(width=5, thickness=4) {
+  offset_bottom=6;
 	difference () {
-		translate([0,0.3,6])
+		translate([0,0.3,offset_bottom])
 		  union() {
-	  		cube([5,4,BOX_H-6]);
+	  		cube([width,thickness,BOX_H-offset_bottom]);
 			translate([0,0,0])
 			intersection() {
-			rotate(90, [0,1,0]) cylinder (r=4,h=5);
-			 translate([0,0,-4])  cube([5,4,4]);
+			rotate(90, [0,1,0]) cylinder (r=thickness,h=width);
+			 translate([0,0,-4])  cube([width,thickness,thickness]);
 			};
 			};
 		union() {
@@ -105,7 +106,7 @@ module lock_fixture() {
 			translate([-1,hole_offset,BOX_H-8])
 				rotate (90,[0,1,0])
 				cylinder(BOX_RIM*3,1);
-			translate([-1,hole_offset,6])
+			translate([-1,hole_offset,offset_bottom])
 				rotate (90,[0,1,0])
 				cylinder(BOX_RIM*3,1);
 		};
