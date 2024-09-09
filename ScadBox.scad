@@ -128,11 +128,27 @@ module lock_fixture() {
 	};
 };
 
+module lock_internal() {
+		width=39;
+		depth=7;
+		translate ([0,BOX_L/2+2.25,1])
+		difference () {
+			linear_extrude(BOX_H-RIM_W)
+				difference () {
+				  offset(CORNER_RADIUS) square([width, depth], center=true);
+				  square([width+WALL_THICKNESS-0.5, depth+WALL_THICKNESS], center=true);
+				};
+				translate([0,4.5,BOX_H/2]) cube([width*2,10,BOX_H],center=true);
+		};
+};
+
 module lock_cutout(offset) {
   cut_depth = INTERNAL_LOCK ? 40 : RIM_W+FIXTURE_THICKNESS;
-	cut_offset = INTERNAL_LOCK ? offset -10 : offset - 1;
-	translate ([-20,cut_offset,-1])
-		cube([40,cut_depth,BOX_H+2]);
+	cut_offset = INTERNAL_LOCK ? offset+16 : offset + RIM_W;
+	translate ([0,cut_offset,-3])
+		linear_extrude(BOX_H*2)
+  //		offset(r=CORNER_RADIUS)
+    		square([40,cut_depth],center=true);
 };
 
 module division(x,y) {
@@ -178,7 +194,10 @@ union() {
 
 	//add lock fixtures
 	if (INTERNAL_LOCK) {
-		//TODO
+    lock_internal();
+		mirror([0,1,0]) {
+		lock_internal();
+		};
 	}
 	else {
 		for (i = coordinates) {
