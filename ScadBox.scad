@@ -12,7 +12,7 @@ CORNER_RADIUS = 2; //[1:1:10]
 // Add a top rim
 RIM = true;
 // Top Rim in mm 
-BOX_RIM = 3; //[3:1:10]
+RIM_W = 3; //[3:1:10]
 // Outer Wall Thickness
 WALL_THICKNESS = 1.5;
 // Inner Wall Thickness
@@ -40,7 +40,7 @@ BOX_H = BOX_H_OUTER; // Box Height
 POST_OFFSET=10;
 
 module box_base() {
-  ext_h = RIM ? BOX_H-BOX_RIM : BOX_H;
+  ext_h = RIM ? BOX_H-RIM_W : BOX_H;
   linear_extrude( ext_h )
 		difference(){
 			offset(r=CORNER_RADIUS) 
@@ -66,14 +66,14 @@ module box_rim () {
 	difference(){
 		hull(){
 			//upper face
-			translate([0,0,-BOX_RIM/2]){
-				linear_extrude(BOX_RIM/2){
-					offset(r=CORNER_RADIUS)	square( [BOX_W+BOX_RIM, BOX_L+BOX_RIM], center=true );
+			translate([0,0,-RIM_W/2]){
+				linear_extrude(RIM_W/2){
+					offset(r=CORNER_RADIUS)	square( [BOX_W+RIM_W, BOX_L+RIM_W], center=true );
 				};
 			};
 			//lower face
-			translate([0,0,-2*BOX_RIM]){
-				linear_extrude(BOX_RIM/2){
+			translate([0,0,-2*RIM_W]){
+				linear_extrude(RIM_W/2){
 					offset(r=CORNER_RADIUS) 
 						square( [BOX_W, BOX_L], center=true );
 				};
@@ -85,7 +85,7 @@ module box_rim () {
 			translate ([0,0,-2]) {
 				linear_extrude(5){
 					offset(r=CORNER_RADIUS+.3)
-						square([BOX_W-BOX_RIM/4+0.3,BOX_L-BOX_RIM/4+0.3],center=true);
+						square([BOX_W-RIM_W/4+0.3,BOX_L-RIM_W/4+0.3],center=true);
 				};
 			};
 			//lower
@@ -104,7 +104,7 @@ module lock_fixture() {
 		translate([0,0,offset_bottom])
 			union() {
 			  translate([0,0,-FIXTURE_THICKNESS])
-					cube([FIXTURE_WIDTH,0.3,BOX_H-offset_bottom]);
+					cube([FIXTURE_WIDTH,0.3,BOX_H-2]);
 				translate([0,0.3,0])
 					cube([FIXTURE_WIDTH,FIXTURE_THICKNESS,BOX_H-offset_bottom]);
 				translate([0,0.3,0])
@@ -119,18 +119,18 @@ module lock_fixture() {
 			//upper
 			translate([-1,hole_offset,BOX_H-8])
 				rotate (90,[0,1,0])
-				cylinder(BOX_RIM*3,1);
+				cylinder(RIM_W*3,1);
 			//lower
 			translate([-1,hole_offset,offset_bottom])
 				rotate (90,[0,1,0])
-				cylinder(BOX_RIM*3,1);
+				cylinder(RIM_W*3,1);
 		};
 	};
 };
 
 module lock_cutout(offset) {
   translate ([-20,offset-1,-1])
-	cube([40,BOX_RIM+FIXTURE_THICKNESS,BOX_H+2]);
+	cube([40,RIM_W+FIXTURE_THICKNESS,BOX_H+2]);
 
 };
 
@@ -138,12 +138,12 @@ module division(x,y) {
   step_x=BOX_W/(x+1) ;
 	for (i=[1:x]) {
 	translate ([-BOX_W/2+i*step_x,0,BOX_H/2])
-		cube([DIVIDER_THICKNESS,BOX_L,BOX_H-BOX_RIM-1],center=true);
+		cube([DIVIDER_THICKNESS,BOX_L,BOX_H-RIM_W-1],center=true);
 		};
   step_y=BOX_L/(y+1) ;
 	for (i=[1:y]) {
 	translate ([0,-BOX_L/2+i*step_y,BOX_H/2])
-		cube([BOX_W,DIVIDER_THICKNESS,BOX_H-BOX_RIM-1],center=true);
+		cube([BOX_W,DIVIDER_THICKNESS,BOX_H-RIM_W-1],center=true);
 		};
 };
 
