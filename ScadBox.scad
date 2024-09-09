@@ -129,9 +129,10 @@ module lock_fixture() {
 };
 
 module lock_cutout(offset) {
-  translate ([-20,offset-1,-1])
-	cube([40,RIM_W+FIXTURE_THICKNESS,BOX_H+2]);
-
+  cut_depth = INTERNAL_LOCK ? 40 : RIM_W+FIXTURE_THICKNESS;
+	cut_offset = INTERNAL_LOCK ? offset -10 : offset - 1;
+	translate ([-20,cut_offset,-1])
+		cube([40,cut_depth,BOX_H+2]);
 };
 
 module division(x,y) {
@@ -169,14 +170,9 @@ union() {
 		};
 
 		//make space for locking mechanism
-		if (INTERNAL_LOCK) {
-			//TODO
-		}
-		else {
+		lock_cutout(offset_fixture_position);
+		mirror ([0,1,0]){
 			lock_cutout(offset_fixture_position);
-			mirror ([0,1,0]){
-				lock_cutout(offset_fixture_position);
-			}
 		};
 	};
 
