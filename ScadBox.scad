@@ -25,6 +25,10 @@ DIVISIONS_L =1;
 DIVISIONS_W =3;
 
 /*[Hidden]*/
+FIXTURE_WIDTH = 5;
+FIXTURE_THICKNESS = 3;
+
+
 BOX_L = BOX_L_OUTER-2*CORNER_RADIUS; // Box Width
 BOX_W = BOX_W_OUTER-2*CORNER_RADIUS; // Box Length
 BOX_H = BOX_H_OUTER; // Box Height
@@ -89,23 +93,29 @@ module box_rim () {
 	};
 };
 
-module lock_fixture(width=5, thickness=4) {
-  offset_bottom=6;
+module lock_fixture() {
+  offset_bottom=FIXTURE_THICKNESS+2;
 	difference () {
-		translate([0,0.3,offset_bottom])
-		  union() {
-	  		cube([width,thickness,BOX_H-offset_bottom]);
-			translate([0,0,0])
-			intersection() {
-			rotate(90, [0,1,0]) cylinder (r=thickness,h=width);
-			 translate([0,0,-4])  cube([width,thickness,thickness]);
+		translate([0,0,offset_bottom])
+			union() {
+			  translate([0,0,-FIXTURE_THICKNESS])
+					cube([FIXTURE_WIDTH,0.3,BOX_H-offset_bottom]);
+				translate([0,0.3,0])
+					cube([FIXTURE_WIDTH,FIXTURE_THICKNESS,BOX_H-offset_bottom]);
+				translate([0,0.3,0])
+					intersection() {
+						rotate(90, [0,1,0]) cylinder (r=FIXTURE_THICKNESS,h=FIXTURE_WIDTH);
+						translate([0,0,-FIXTURE_THICKNESS])  cube([FIXTURE_WIDTH,FIXTURE_THICKNESS,FIXTURE_THICKNESS]);
+					};
 			};
-			};
+		//fixture holes
 		union() {
-		  hole_offset=2.25;
+		  hole_offset=FIXTURE_THICKNESS/2;
+			//upper
 			translate([-1,hole_offset,BOX_H-8])
 				rotate (90,[0,1,0])
 				cylinder(BOX_RIM*3,1);
+			//lower
 			translate([-1,hole_offset,offset_bottom])
 				rotate (90,[0,1,0])
 				cylinder(BOX_RIM*3,1);
@@ -113,9 +123,9 @@ module lock_fixture(width=5, thickness=4) {
 	};
 };
 
-module fixture_cutout(offset) {
-  translate ([-20,offset,0])
-	cube([40,BOX_RIM,BOX_H+1]);
+module lock_cutout(offset) {
+  translate ([-20,offset-1,-1])
+	cube([40,BOX_RIM+FIXTURE_THICKNESS,BOX_H+2]);
 
 };
 
@@ -132,9 +142,8 @@ module division(x,y) {
 		};
 };
 
-f_offset = BOX_L/2 + CORNER_RADIUS;
-coordinates = [ [20,f_offset],[-25,f_offset]];
-
+offset_fixture_position = BOX_L/2 + CORNER_RADIUS;
+coordinates = [ [20,offset_fixture_position],[-25,offset_fixture_position]];
 
 difference (){
 	union () {
@@ -155,8 +164,8 @@ difference (){
 				translate (i) lock_fixture();
 		};
 	};
-	fixture_cutout(f_offset);
+	lock_cutout(offset_fixture_position);
 	mirror ([0,1,0]){
-		fixture_cutout(f_offset);
+		lock_cutout(offset_fixture_position);
 	};
 };
