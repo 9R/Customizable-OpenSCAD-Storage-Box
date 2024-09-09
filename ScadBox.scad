@@ -91,7 +91,7 @@ module box_rim () {
 
 module lock_fixture() {
 	difference () {
-		translate([0,0,6])
+		translate([0,0.3,6])
 		  union() {
 	  		cube([5,4,BOX_H-6]);
 			translate([0,0,0])
@@ -114,7 +114,7 @@ module lock_fixture() {
 
 module fixture_cutout(offset) {
   translate ([-20,offset,0])
-	cube([40,3,BOX_H]);
+	cube([40,BOX_RIM,BOX_H+1]);
 
 };
 
