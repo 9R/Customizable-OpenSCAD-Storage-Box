@@ -130,26 +130,26 @@ module lock_fixture() {
 };
 
 module lock_internal() {
-		width=39;
-		depth=7;
-		translate ([0,BOX_L/2+2.25,1])
+		width=LOCK_W;
+		depth=INTERNAL_LOCK_DEPTH;
+		translate ([0,BOX_L_OUTER/2,1])
 		difference () {
 			linear_extrude(BOX_H-RIM_W)
 				difference () {
-				  offset(CORNER_RADIUS) square([width, depth], center=true);
-				  square([width+WALL_THICKNESS-0.5, depth+WALL_THICKNESS], center=true);
+				  offset(3) square([width, depth], center=true);
+				  square([width, depth], center=true);
 				};
-				translate([0,4.5,BOX_H/2]) cube([width*2,10,BOX_H],center=true);
+				translate([-width,0,0]) cube([width*2,INTERNAL_LOCK_DEPTH,BOX_H]);
 		};
 };
 
 module lock_cutout(offset) {
-  cut_depth = INTERNAL_LOCK ? 40 : RIM_W+FIXTURE_THICKNESS;
-	cut_offset = INTERNAL_LOCK ? offset+16 : offset + RIM_W;
-	translate ([0,cut_offset,-3])
+  cut_depth = INTERNAL_LOCK ? INTERNAL_LOCK_DEPTH : RIM_W+FIXTURE_THICKNESS;
+	cut_offset = INTERNAL_LOCK ? offset-cut_depth/2 : offset + RIM_W;
+	translate ([-LOCK_W/2,cut_offset,-3])
 		linear_extrude(BOX_H*2)
   //		offset(r=CORNER_RADIUS)
-    		square([40,cut_depth],center=true);
+    		square([LOCK_W,cut_depth]);
 };
 
 module division(x,y) {
