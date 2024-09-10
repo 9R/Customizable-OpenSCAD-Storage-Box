@@ -29,9 +29,10 @@ DIVISIONS_L =1;
 DIVISIONS_W =3;
 
 /*[Hidden]*/
-FIXTURE_WIDTH = 5;
-FIXTURE_THICKNESS = 3;
-
+FIXTURE_W = 5;
+FIXTURE_THICKNESS = 4;
+LOCK_W = 35;
+INTERNAL_LOCK_DEPTH = 15;
 
 BOX_L = BOX_L_OUTER-2*CORNER_RADIUS; // Box Width
 BOX_W = BOX_W_OUTER-2*CORNER_RADIUS; // Box Length
@@ -104,13 +105,13 @@ module lock_fixture() {
 		translate([0,0,offset_bottom])
 			union() {
 			  translate([0,0,-FIXTURE_THICKNESS])
-					cube([FIXTURE_WIDTH,0.3,BOX_H-2]);
+					cube([FIXTURE_W,0.3,BOX_H-2]);
 				translate([0,0.3,0])
-					cube([FIXTURE_WIDTH,FIXTURE_THICKNESS,BOX_H-offset_bottom]);
+					cube([FIXTURE_W,FIXTURE_THICKNESS,BOX_H-offset_bottom]);
 				translate([0,0.3,0])
 					intersection() {
-						rotate(90, [0,1,0]) cylinder (r=FIXTURE_THICKNESS,h=FIXTURE_WIDTH);
-						translate([0,0,-FIXTURE_THICKNESS])  cube([FIXTURE_WIDTH,FIXTURE_THICKNESS,FIXTURE_THICKNESS]);
+						rotate(90, [0,1,0]) cylinder (r=FIXTURE_THICKNESS,h=FIXTURE_W);
+						translate([0,0,-FIXTURE_THICKNESS])  cube([FIXTURE_W,FIXTURE_THICKNESS,FIXTURE_THICKNESS]);
 					};
 			};
 		//fixture holes
