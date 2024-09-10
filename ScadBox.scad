@@ -8,7 +8,7 @@ BOX_W_OUTER = 120; //[60:5:300]
 // Height in mm
 BOX_H_OUTER =  22; //[60:5:300]
 // Corner Radius in mm
-CORNER_RADIUS = 2; //[1:1:10]
+CORNER_RADIUS = 3; //[1:1:10]
 // Add a top rim
 RIM = true;
 // Top Rim in mm 
@@ -51,11 +51,11 @@ module box_base() {
 		}
   wt=WALL_THICKNESS;
 	c=CORNER_RADIUS;
-	coordinates = [ [0,0],[0,BOX_L],[BOX_W,BOX_L],[BOX_W,0] ];
+	corner_coordinates = [ [0,0],[0,BOX_L],[BOX_W,BOX_L],[BOX_W,0] ];
 
 	translate ( [-BOX_W/2, -BOX_L/2] ) {
 		hull(){
-			for (i = coordinates) {
+			for (i = corner_coordinates) {
 				translate(i) cylinder(r=CORNER_RADIUS,h=FLOOR_THICKNESS);
 			};
 		};
@@ -165,7 +165,7 @@ module division(x,y) {
 };
 
 offset_fixture_position = BOX_L/2 + CORNER_RADIUS;
-coordinates = [ [20,offset_fixture_position],[-25,offset_fixture_position]];
+fixture_coordinates = [ [LOCK_W/2,offset_fixture_position],[-LOCK_W/2-FIXTURE_W,offset_fixture_position]];
 
 //box
 union() {
@@ -200,11 +200,11 @@ union() {
 		};
 	}
 	else {
-		for (i = coordinates) {
+		for (i = fixture_coordinates) {
 			translate (i) lock_fixture();
 		}
 		mirror ([0,1,0]){
-			for (i = coordinates) {
+			for (i = fixture_coordinates) {
 				translate (i) lock_fixture();
 			};
 		};
