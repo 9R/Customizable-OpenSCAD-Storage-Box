@@ -3,28 +3,37 @@ $fn=20;
 /*[Dimensions]*/
 // Length in mm
 BOX_L_OUTER = 165; //[60:5:300]
+
 // Width in mm
 BOX_W_OUTER = 120; //[60:5:300]
+
 // Height in mm
 BOX_H_OUTER =  22; //[60:5:300]
+
 // Corner Radius in mm
 CORNER_RADIUS = 3; //[1:1:10]
+
 // Add a top rim
 RIM = true;
+
 // Top Rim in mm 
 RIM_W = 3; //[3:1:10]
+
 // Outer Wall Thickness
 WALL_THICKNESS = 1.5;
+
 // Inner Wall Thickness
 DIVIDER_THICKNESS = 1;
+
 // Floor Thickness
 FLOOR_THICKNESS = 1;
+
 // Internal or External Lock
 INTERNAL_LOCK = false;
 
-/*[Divisions]*/
 //number of divisions on the long edge
 DIVISIONS_L =1;
+
 //number of divisions on the short edge
 DIVISIONS_W =3;
 
