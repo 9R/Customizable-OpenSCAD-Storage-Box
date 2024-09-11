@@ -99,6 +99,22 @@ module box_rim () {
 	};
 };
 
+module fixture_holes(offset_bottom) {
+		union() {
+
+			hole_offset= INTERNAL_LOCK ? - INTERNAL_LOCK_DEPTH/4 : FIXTURE_THICKNESS/2;
+			cut=LOCK_W+WALL_THICKNESS*4;
+			//upper
+#			translate([-cut/2,hole_offset,BOX_H-8])
+				rotate (90,[0,1,0])
+		  		cylinder(cut,1);
+			//lower
+#			translate([-cut/2,hole_offset,offset_bottom])
+				rotate (90,[0,1,0])
+			  	cylinder(cut,1);
+		};
+};
+
 module lock_fixture() {
   offset_bottom=FIXTURE_THICKNESS+2;
 	difference () {
@@ -115,17 +131,7 @@ module lock_fixture() {
 					};
 			};
 		//fixture holes
-		union() {
-		  hole_offset=FIXTURE_THICKNESS/2;
-			//upper
-			translate([-1,hole_offset,BOX_H-8])
-				rotate (90,[0,1,0])
-				cylinder(RIM_W*3,1);
-			//lower
-			translate([-1,hole_offset,offset_bottom])
-				rotate (90,[0,1,0])
-				cylinder(RIM_W*3,1);
-		};
+		fixture_holes(offset_bottom);
 	};
 };
 
@@ -140,6 +146,7 @@ module lock_internal() {
 				  square([width, depth], center=true);
 				};
 				translate([-width,0,0]) cube([width*2,INTERNAL_LOCK_DEPTH,BOX_H]);
+				fixture_holes(FIXTURE_THICKNESS+2);
 		};
 };
 
