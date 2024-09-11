@@ -1,6 +1,7 @@
 $fn=20;
 
 /*[Dimensions]*/
+//CONFIGSTART
 // Length in mm
 BOX_L_OUTER = 165; //[60:5:300]
 
@@ -36,7 +37,7 @@ DIVISIONS_L =1;
 
 //number of divisions on the short edge
 DIVISIONS_W =3;
-
+//CONFIGEND
 /*[Hidden]*/
 FIXTURE_W = 5;
 FIXTURE_THICKNESS = 4;
