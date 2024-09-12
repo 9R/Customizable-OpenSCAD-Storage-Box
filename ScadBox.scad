@@ -1,7 +1,12 @@
 $fn=20;
 
 /*[Dimensions]*/
-//CONFIGSTART
+// Add a top rim
+RIM = true;
+
+// Internal or External Lock
+INTERNAL_LOCK = false;
+
 // Length in mm
 BOX_L_OUTER = 165; //[60:5:300]
 
@@ -13,9 +18,6 @@ BOX_H_OUTER =  22; //[60:5:300]
 
 // Corner Radius in mm
 CORNER_RADIUS = 3; //[1:1:10]
-
-// Add a top rim
-RIM = true;
 
 // Top Rim in mm 
 RIM_W = 3; //[3:1:10]
@@ -29,16 +31,16 @@ DIVIDER_THICKNESS = 1;
 // Floor Thickness
 FLOOR_THICKNESS = 1;
 
-// Internal or External Lock
-INTERNAL_LOCK = false;
-
 //number of divisions on the long edge
 DIVISIONS_L =1;
 
 //number of divisions on the short edge
 DIVISIONS_W =3;
-//CONFIGEND
+
 /*[Hidden]*/
+module __customizer_limit__ () {};
+//above 2 lines make sure customizer does not show parameters below
+
 FIXTURE_W = 5;
 FIXTURE_THICKNESS = 4;
 LOCK_W = 35;
