@@ -1,0 +1,42 @@
+name: zip and upload model to generator
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+jobs:
+  package_and_upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: rename scad model
+        run: mv ScadBox.scad model.scad
+
+      - name: Create archive
+        run: zip model.zip model.scad
+
+      - name: Checkout repo_b
+        uses: actions/checkout@v3
+        with:
+          repository: 9R/StorageBox-Generator
+          token: ${{ secrets.STORAGEBOXGENERATORPUSH }}
+          ref: production
+          path: StorageBox-Generator
+
+      - name: Copy model.zip to StorageBox-Generator Repo
+        run: cp model.zip StorageBox-Generator
+
+      - name: Commit and push model.zip to StorageBox-Generator Repo
+        run: |
+          cd StorageBox-Generator
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Action"
+          git add model.zip
+          git commit -m "Add latest version from https://github.com/9R/Customizable-OpenSCAD-Storage-Box"
+          git push
