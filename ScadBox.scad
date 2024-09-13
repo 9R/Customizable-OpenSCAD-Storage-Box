@@ -41,9 +41,6 @@ DIVISIONS_L =1;
 // Number of Divisions on the Short Edge
 DIVISIONS_W =3;
 
-/*[Hidden]*/
-module __customizer_limit__ () {};
-//above 2 lines make sure customizer does not show parameters below
 
 // Width of Lock Fixtures
 FIXTURE_W = 5;
@@ -59,6 +56,10 @@ INTERNAL_LOCK_DEPTH = 15;
 
 // Diamenter of Lock Bolts
 LOCK_BOLT_D = 1.3;
+
+/*[Hidden]*/
+module __customizer_limit__ () {};
+//above 2 lines make sure customizer does not show parameters below
 
 BOX_L = BOX_L_OUTER-2*CORNER_RADIUS; // Box Width
 BOX_W = BOX_W_OUTER-2*CORNER_RADIUS; // Box Length
