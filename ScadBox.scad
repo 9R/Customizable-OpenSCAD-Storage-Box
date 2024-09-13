@@ -1,5 +1,9 @@
 $fn=20;
 
+/*[Part]*/
+// Select part to render
+PART="container"; //[container, lid, latch]
+
 /*[Dimensions]*/
 // Add a top rim
 RIM = true;
@@ -158,6 +162,7 @@ module lock_fixture() {
 				translate([0,0.3,0])
 					cube([FIXTURE_W,FIXTURE_THICKNESS,BOX_H-offset_bottom]);
 				translate([0,0.3,0])
+				  //rounded bottom
 					intersection() {
 						rotate(90, [0,1,0])
 						  cylinder (r=FIXTURE_THICKNESS,h=FIXTURE_W);
@@ -214,10 +219,30 @@ offset_fixture_position = BOX_L/2 + CORNER_RADIUS;
 fixture_coordinates = [ [LOCK_W/2,offset_fixture_position],
                         [-LOCK_W/2-FIXTURE_W,offset_fixture_position]];
 
-			//add top rim
-			if (RIM){
-				translate([0,0,BOX_H]) {
-					box_rim();
+hinge_coordinates = [	[LOCK_W/2-FIXTURE_W, BOX_L/2+RIM_W,0],
+                      [-LOCK_W/2, BOX_L/2+RIM_W,0]];
+
+///////////////////////////////////////////////////////////////////////////////
+// Parts
+///////////////////////////////////////////////////////////////////////////////
+
+// container
+////////////
+
+if (PART == "container"){
+	union() {
+		difference (){
+			union () {
+				//create base shape
+				container_hull();
+
+				//add top rim
+				if (RIM){
+					translate([0,0,BOX_H]) {
+						box_rim();
+					};
+				};
+      
 				//add division
 				if (DIVISIONS_W > 0) {
 				division(DIVISIONS_W, BOX_L, BOX_W);
@@ -228,28 +253,41 @@ fixture_coordinates = [ [LOCK_W/2,offset_fixture_position],
 				};
 			};
 
-		//make space for locking mechanism
-		lock_cutout(offset_fixture_position);
-		mirror ([0,1,0]){
+			//make space for locking mechanism
 			lock_cutout(offset_fixture_position);
+			mirror ([0,1,0]){
+				lock_cutout(offset_fixture_position);
+			};
 		};
-	};
 
-	//add lock fixtures
-	if (INTERNAL_LOCK) {
-    lock_internal();
-		mirror([0,1,0]) {
-		lock_internal();
-		};
-	}
-	else {
-		for (i = fixture_coordinates) {
-			translate (i) lock_fixture();
+		//add lock fixtures
+		if (INTERNAL_LOCK) {
+			lock_internal();
+			mirror([0,1,0]) {
+				lock_internal();
+			};
 		}
-		mirror ([0,1,0]){
+		else {
 			for (i = fixture_coordinates) {
 				translate (i) lock_fixture();
+			}
+			mirror ([0,1,0]){
+				for (i = fixture_coordinates) {
+					translate (i) lock_fixture();
+				};
 			};
 		};
 	};
+};
+
+// lid
+//////
+
+if (PART == "lid"){
+};
+
+// latch
+if (PART == "latch"){
+  linear_extrude (3)
+	  text("Sry, not designed yet. :(",halign="center",valign="center");
 };
