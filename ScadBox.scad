@@ -194,16 +194,14 @@ module lock_cutout(offset) {
     		square([LOCK_W,cut_depth]);
 };
 
-module division(x,y) {
-  step_x=BOX_W/(x+1) ;
-	for (i=[1:x]) {
-	translate ([-BOX_W/2+i*step_x,0,BOX_H/2-0.5])
-		cube([DIVIDER_THICKNESS,BOX_L_OUTER,BOX_H-RIM_W],center=true);
+module division(count, length, width) {
+  step_x=width/(count+1) ;
+	for (i=[1:count]) {
+	translate ([-width/2+i*step_x,0,BOX_H/2-0.5])
+		cube([DIVIDER_THICKNESS,length+RIM_W,BOX_H-RIM_W],center=true);
 		};
-  step_y=BOX_L/(y+1) ;
-	for (i=[1:y]) {
-	translate ([0,-BOX_L/2+i*step_y,BOX_H/2-0.5])
-		cube([BOX_W_OUTER ,DIVIDER_THICKNESS,BOX_H-RIM_W],center=true);
+	};
+
 		};
 };
 
@@ -221,12 +219,15 @@ union() {
 			if (RIM){
 				translate([0,0,BOX_H]) {
 					box_rim();
+				//add division
+				if (DIVISIONS_W > 0) {
+				division(DIVISIONS_W, BOX_L, BOX_W);
+				};
+				if (DIVISIONS_L > 0) {
+				rotate (90,[0,0,1])
+				division(DIVISIONS_L, BOX_W, BOX_L);
 				};
 			};
-
-			//add division
-			division(DIVISIONS_L,DIVISIONS_W);
-		};
 
 		//make space for locking mechanism
 		lock_cutout(offset_fixture_position);
