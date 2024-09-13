@@ -241,10 +241,10 @@ module hinge() {
 // Derived Variables
 ///////////////////////////////////////////////////////////////////////////////
 
-offset_fixture_position = BOX_L/2 + CORNER_RADIUS;
+fixture_offset = BOX_L/2 + CORNER_RADIUS;
 
-fixture_coordinates = [ [LOCK_W/2,offset_fixture_position],
-                        [-LOCK_W/2-FIXTURE_W,offset_fixture_position]];
+fixture_coordinates = [ [LOCK_W/2,fixture_offset],
+                        [-LOCK_W/2-FIXTURE_W,fixture_offset]];
 
 hinge_offset = BOX_L/2 + CORNER_RADIUS;
 hinge_coordinates = [	[LOCK_W/2-FIXTURE_W, hinge_offset, 0],
@@ -282,9 +282,9 @@ if (PART == "container"){
 			};
 
 			//make space for locking mechanism
-			lock_cutout(offset_fixture_position);
+			lock_cutout(fixture_offset);
 			mirror ([0,1,0]){
-				lock_cutout(offset_fixture_position);
+				lock_cutout(fixture_offset);
 			};
 		};
 
