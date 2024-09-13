@@ -154,7 +154,7 @@ module fixture_holes(offset_bottom) {
 };
 
 module lock_fixture() {
-  offset_bottom=FIXTURE_THICKNESS+2;
+  offset_bottom=FIXTURE_THICKNESS;
 	difference () {
 		translate([0,0,offset_bottom])
 			union() {
@@ -193,7 +193,7 @@ module lock_internal() {
 
 module lock_cutout(offset) {
   cut_depth = INTERNAL_LOCK ? INTERNAL_LOCK_DEPTH : RIM_W+FIXTURE_THICKNESS;
-	cut_offset = INTERNAL_LOCK ? offset-cut_depth/2 : offset + RIM_W;
+	cut_offset = INTERNAL_LOCK ? offset-cut_depth/2 : offset;
 	translate ([-LOCK_W/2,cut_offset,-3])
 		linear_extrude(BOX_H*2)
   //		offset(r=CORNER_RADIUS)
