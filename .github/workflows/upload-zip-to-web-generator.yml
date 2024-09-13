@@ -24,7 +24,7 @@ jobs:
       - name: Checkout repo_b
         uses: actions/checkout@v3
         with:
-          repository: 9R/StorageBox-Generator
+          repository: 9R/OpenSCAD-Web-Customizer
           token: ${{ secrets.STORAGEBOXGENERATORPUSH }}
           ref: production
           path: StorageBox-Generator
