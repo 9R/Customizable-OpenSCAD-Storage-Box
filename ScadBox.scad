@@ -59,6 +59,8 @@ BOX_H = BOX_H_OUTER; // Box Height
 
 POST_OFFSET=10;
 
+// Offset between snapping parts
+PART_OFFSET = 0.3;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Modules
@@ -112,7 +114,8 @@ module box_rim () {
 			translate ([0,0,-2]) {
 				linear_extrude(5){
 					offset(r=CORNER_RADIUS+.3)
-						square([BOX_W-RIM_W/4+0.3,BOX_L-RIM_W/4+0.3],center=true);
+						square([BOX_W-RIM_W/4+PART_OFFSET,BOX_L-RIM_W/4+PART_OFFSET],
+						center=true);
 				};
 			};
 			//lower
