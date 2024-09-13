@@ -205,15 +205,14 @@ module division(count, length, width) {
 		};
 };
 
-offset_fixture_position = BOX_L/2 + CORNER_RADIUS;
-fixture_coordinates = [ [LOCK_W/2,offset_fixture_position],[-LOCK_W/2-FIXTURE_W,offset_fixture_position]];
+///////////////////////////////////////////////////////////////////////////////
+// Derived Variables
+///////////////////////////////////////////////////////////////////////////////
 
-//box
-union() {
-	difference (){
-		union () {
-			//create base shape
-			box_base();
+offset_fixture_position = BOX_L/2 + CORNER_RADIUS;
+
+fixture_coordinates = [ [LOCK_W/2,offset_fixture_position],
+                        [-LOCK_W/2-FIXTURE_W,offset_fixture_position]];
 
 			//add top rim
 			if (RIM){
