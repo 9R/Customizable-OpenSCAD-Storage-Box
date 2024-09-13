@@ -20,6 +20,9 @@ BOX_W_OUTER = 120; //[50:5:300]
 // Container Height in mm
 BOX_H_OUTER =  22; //[60:5:300]
 
+// Lid Thickness in mm
+LID_H = 3; //[3:1:10]
+
 // Corner Radius in mm
 CORNER_RADIUS = 3; //[1:1:10]
 
@@ -208,7 +211,30 @@ module division(count, length, width) {
 		};
 	};
 
+module hinge() {
+	difference () {
+		union () {
+		  //hinge lever
+			translate ([0,0,6])
+				cube([FIXTURE_W, FIXTURE_THICKNESS,LID_H-3]);
+			rotate(90, [0,1,0]) {
+				translate([-3-LID_H,FIXTURE_THICKNESS/2,0])
+					cylinder (r=FIXTURE_THICKNESS/2, h=FIXTURE_W);
+			};
+			//upper rounding
+			translate ([0,0,FIXTURE_THICKNESS])
+				rotate(90, [0,1,0]) {
+					intersection () {
+						cylinder (r=FIXTURE_THICKNESS, h=FIXTURE_W);
+						cube([FIXTURE_W*2,FIXTURE_THICKNESS*2,FIXTURE_W]);
+					};
+				};
 		};
+		  //add holes for bolt
+	    translate([-1,FIXTURE_THICKNESS/2,LID_H+3])	
+				rotate(90, [0,1,0]) 
+						cylinder (r=LOCK_BOLT_D, h=FIXTURE_W*2);
+	};
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -220,8 +246,9 @@ offset_fixture_position = BOX_L/2 + CORNER_RADIUS;
 fixture_coordinates = [ [LOCK_W/2,offset_fixture_position],
                         [-LOCK_W/2-FIXTURE_W,offset_fixture_position]];
 
-hinge_coordinates = [	[LOCK_W/2-FIXTURE_W, BOX_L/2+RIM_W,0],
-                      [-LOCK_W/2, BOX_L/2+RIM_W,0]];
+hinge_offset = BOX_L/2 + CORNER_RADIUS;
+hinge_coordinates = [	[LOCK_W/2-FIXTURE_W, hinge_offset, 0],
+                      [-LOCK_W/2, hinge_offset, 0]];
 
 ///////////////////////////////////////////////////////////////////////////////
 // Parts
@@ -285,6 +312,25 @@ if (PART == "container"){
 //////
 
 if (PART == "lid"){
+	union() {
+		difference() {
+		  //lid with interlocking ledge
+			union(){
+				base_plate(BOX_L, BOX_W, LID_H);
+				if (RIM) {
+					base_plate(BOX_L + RIM_W, BOX_W + RIM_W, LID_H-2);
+				};
+			};
+			//make space for latch / hinge
+			lock_cutout(fixture_offset);
+			mirror ([0,1,0])
+				lock_cutout(fixture_offset);
+		};
+		//add hinges
+			for (i = hinge_coordinates) {
+				translate (i) hinge();
+			}
+	};
 };
 
 // latch
