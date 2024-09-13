@@ -59,7 +59,24 @@ BOX_H = BOX_H_OUTER; // Box Height
 
 POST_OFFSET=10;
 
-module box_base() {
+
+///////////////////////////////////////////////////////////////////////////////
+// Modules
+///////////////////////////////////////////////////////////////////////////////
+
+module base_plate(length, width, thickness){
+	corner_coordinates = [ [0,0],[0,length],[width,length],[width,0] ];
+
+	translate ( [-width/2, -length/2] ) {
+		hull(){
+			for (i = corner_coordinates) {
+				translate(i) cylinder(r=CORNER_RADIUS,h=thickness);
+			};
+		};
+	};
+};
+
+module container_hull() {
   ext_h = RIM ? BOX_H-RIM_W : BOX_H;
   linear_extrude( ext_h )
 		difference(){
@@ -69,17 +86,7 @@ module box_base() {
 			offset( r = CORNER_RADIUS - WALL_THICKNESS )
 				square( [BOX_W - WALL_THICKNESS, BOX_L - WALL_THICKNESS], center=true );
 		}
-  wt=WALL_THICKNESS;
-	c=CORNER_RADIUS;
-	corner_coordinates = [ [0,0],[0,BOX_L],[BOX_W,BOX_L],[BOX_W,0] ];
-
-	translate ( [-BOX_W/2, -BOX_L/2] ) {
-		hull(){
-			for (i = corner_coordinates) {
-				translate(i) cylinder(r=CORNER_RADIUS,h=FLOOR_THICKNESS);
-			};
-		};
-	};
+	base_plate(BOX_L, BOX_W, FLOOR_THICKNESS);
 };
 
 module box_rim () {
