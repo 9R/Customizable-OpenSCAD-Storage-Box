@@ -86,7 +86,7 @@ module container_hull() {
 				square( [BOX_W , BOX_L ], center=true );
 
 			offset( r = CORNER_RADIUS - WALL_THICKNESS )
-				square( [BOX_W - WALL_THICKNESS, BOX_L - WALL_THICKNESS], center=true );
+				square([BOX_W - WALL_THICKNESS, BOX_L - WALL_THICKNESS], center=true );
 		}
 	base_plate(BOX_L, BOX_W, FLOOR_THICKNESS);
 };
@@ -97,7 +97,8 @@ module box_rim () {
 			//upper face
 			translate([0,0,-RIM_W/2]){
 				linear_extrude(RIM_W/2){
-					offset(r=CORNER_RADIUS)	square( [BOX_W+RIM_W, BOX_L+RIM_W], center=true );
+					offset(r=CORNER_RADIUS)
+					  square( [BOX_W+RIM_W, BOX_L+RIM_W], center=true );
 				};
 			};
 			//lower face
@@ -131,14 +132,14 @@ module box_rim () {
 module fixture_holes(offset_bottom) {
 		union() {
 
-			hole_offset= INTERNAL_LOCK ? - INTERNAL_LOCK_DEPTH/4 : FIXTURE_THICKNESS/2;
+			hole_offset=INTERNAL_LOCK ? -INTERNAL_LOCK_DEPTH/4 : FIXTURE_THICKNESS/2;
 			cut=LOCK_W+WALL_THICKNESS*4;
 			//upper
-#			translate([-cut/2,hole_offset,BOX_H-8])
+			translate([-cut/2,hole_offset,BOX_H-4])
 				rotate (90,[0,1,0])
 		  		cylinder(cut,1);
 			//lower
-#			translate([-cut/2,hole_offset,offset_bottom])
+			translate([-cut/2,hole_offset,offset_bottom])
 				rotate (90,[0,1,0])
 			  	cylinder(cut,1);
 		};
@@ -155,8 +156,10 @@ module lock_fixture() {
 					cube([FIXTURE_W,FIXTURE_THICKNESS,BOX_H-offset_bottom]);
 				translate([0,0.3,0])
 					intersection() {
-						rotate(90, [0,1,0]) cylinder (r=FIXTURE_THICKNESS,h=FIXTURE_W);
-						translate([0,0,-FIXTURE_THICKNESS])  cube([FIXTURE_W,FIXTURE_THICKNESS,FIXTURE_THICKNESS]);
+						rotate(90, [0,1,0])
+						  cylinder (r=FIXTURE_THICKNESS,h=FIXTURE_W);
+						translate([0,0,-FIXTURE_THICKNESS])
+						  cube([FIXTURE_W,FIXTURE_THICKNESS,FIXTURE_THICKNESS]);
 					};
 			};
 		//fixture holes
