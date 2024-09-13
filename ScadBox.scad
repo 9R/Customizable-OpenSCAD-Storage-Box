@@ -53,6 +53,9 @@ LOCK_W = 35;
 // Depth of Internal Lock
 INTERNAL_LOCK_DEPTH = 15;
 
+// Diamenter of Lock Bolts
+LOCK_BOLT_D = 1.3;
+
 BOX_L = BOX_L_OUTER-2*CORNER_RADIUS; // Box Width
 BOX_W = BOX_W_OUTER-2*CORNER_RADIUS; // Box Length
 BOX_H = BOX_H_OUTER; // Box Height
@@ -137,11 +140,11 @@ module fixture_holes(offset_bottom) {
 			//upper
 			translate([-cut/2,hole_offset,BOX_H-4])
 				rotate (90,[0,1,0])
-		  		cylinder(cut,1);
+		  		cylinder(cut,LOCK_BOLT_D,LOCK_BOLT_D);
 			//lower
 			translate([-cut/2,hole_offset,offset_bottom])
 				rotate (90,[0,1,0])
-			  	cylinder(cut,1);
+			  	cylinder(cut,LOCK_BOLT_D,LOCK_BOLT_D);
 		};
 };
 
