@@ -7,13 +7,13 @@ RIM = true;
 // Internal or External Lock
 INTERNAL_LOCK = false;
 
-// Length in mm
-BOX_L_OUTER = 165; //[60:5:300]
+// Container Length in mm
+BOX_L_OUTER = 165; //[50:5:300]
 
-// Width in mm
-BOX_W_OUTER = 120; //[60:5:300]
+// Container Width in mm
+BOX_W_OUTER = 120; //[50:5:300]
 
-// Height in mm
+// Container Height in mm
 BOX_H_OUTER =  22; //[60:5:300]
 
 // Corner Radius in mm
@@ -31,19 +31,26 @@ DIVIDER_THICKNESS = 1;
 // Floor Thickness
 FLOOR_THICKNESS = 1;
 
-//number of divisions on the long edge
+// Number of Divisions on the Long Edge
 DIVISIONS_L =1;
 
-//number of divisions on the short edge
+// Number of Divisions on the Short Edge
 DIVISIONS_W =3;
 
 /*[Hidden]*/
 module __customizer_limit__ () {};
 //above 2 lines make sure customizer does not show parameters below
 
+// Width of Lock Fixtures
 FIXTURE_W = 5;
+
+// Thickness of Lock Fixtures
 FIXTURE_THICKNESS = 4;
+
+// Width of Interlocking Mechanism
 LOCK_W = 35;
+
+// Depth of Internal Lock
 INTERNAL_LOCK_DEPTH = 15;
 
 BOX_L = BOX_L_OUTER-2*CORNER_RADIUS; // Box Width
