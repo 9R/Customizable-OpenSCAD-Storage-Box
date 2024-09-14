@@ -2,7 +2,7 @@ $fn=20;
 
 /*[Part]*/
 // Select part to render
-PART="container"; //[container, lid, latch]
+PART = "container"; //[container, lid, latch]
 
 /*[Dimensions]*/
 // Add a top rim
@@ -146,7 +146,7 @@ module fixture_holes(offset_bottom) {
 			hole_offset=INTERNAL_LOCK ? -INTERNAL_LOCK_DEPTH/4 : FIXTURE_THICKNESS/2;
 			cut=LOCK_W+WALL_THICKNESS*4;
 			//upper
-			translate([-cut/2,hole_offset,BOX_H-4])
+			translate([-cut/2,hole_offset,BOX_H-5])
 				rotate (90,[0,1,0])
 		  		cylinder(cut,LOCK_BOLT_D,LOCK_BOLT_D);
 			//lower
@@ -335,6 +335,9 @@ if (PART == "lid"){
 
 // latch
 if (PART == "latch"){
-  linear_extrude (3)
-	  text("Sry, not designed yet. :(",halign="center",valign="center");
+	union () {
+		cylinder(r=100,h=1);
+		linear_extrude (3)
+			text("Sry, not designed yet. :(",halign="center",valign="center");
+	};
 };
