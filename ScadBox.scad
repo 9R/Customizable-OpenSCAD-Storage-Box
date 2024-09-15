@@ -18,7 +18,7 @@ BOX_L_OUTER = 165; //[50:5:300]
 BOX_W_OUTER = 120; //[50:5:300]
 
 // Container Height in mm
-BOX_H_OUTER =  22; //[60:5:300]
+BOX_H_OUTER =  22; //[20:5:300]
 
 // Lid Thickness in mm
 LID_H = 3; //[3:1:10]
@@ -30,35 +30,35 @@ CORNER_RADIUS = 3; //[1:1:10]
 RIM_W = 3; //[3:1:10]
 
 // Outer Wall Thickness
-WALL_THICKNESS = 1.5;
+WALL_THICKNESS = 1.5; //[1:0.5:10]
 
 // Inner Wall Thickness
-DIVIDER_THICKNESS = 1;
+DIVIDER_THICKNESS = 1; //[1:1:10]
 
 // Floor Thickness
-FLOOR_THICKNESS = 1;
+FLOOR_THICKNESS = 1; //[1:1:10]
 
 // Number of Divisions on the Long Edge
-DIVISIONS_L =1;
+DIVISIONS_L =1; //[0:1:20]
 
 // Number of Divisions on the Short Edge
-DIVISIONS_W =3;
+DIVISIONS_W =3; //[0:1:20]
 
 
 // Width of Lock Fixtures
-FIXTURE_W = 5;
+FIXTURE_W = 5; //[3:1:10]
 
 // Thickness of Lock Fixtures
-FIXTURE_THICKNESS = 4;
+FIXTURE_THICKNESS = 4; //[3:1:10]
 
 // Width of Interlocking Mechanism
-LOCK_W = 35;
+LOCK_W = 35; //[20:2.5:50]
 
 // Depth of Internal Lock
-INTERNAL_LOCK_DEPTH = 15;
+INTERNAL_LOCK_DEPTH = 15; //[10:1:20]
 
 // Diamenter of Lock Bolts
-LOCK_BOLT_D = 1.3;
+LOCK_BOLT_D = 1.3; //[1:0.1:4]
 
 /*[Hidden]*/
 module __customizer_limit__ () {};
@@ -237,6 +237,11 @@ module hinge() {
 	};
 };
 
+module lid_phase(){
+  translate ([BOX_L/2-FIXTURE_W,BOX_W/2+0.5,LID_H-2])
+  rotate (45,[1,0,0]) cube([BOX_L,LID_H,LID_H]);
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 // Derived Variables
 ///////////////////////////////////////////////////////////////////////////////
@@ -323,8 +328,11 @@ if (PART == "lid"){
 			};
 			//make space for latch / hinge
 			lock_cutout(fixture_offset);
+			lid_phase();
 			mirror ([0,1,0])
 				lock_cutout(fixture_offset);
+			mirror ([1,0,0])
+   			lid_phase();
 		};
 		//add hinges
 			for (i = hinge_coordinates) {
