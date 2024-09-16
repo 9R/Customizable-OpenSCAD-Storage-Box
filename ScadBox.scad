@@ -11,6 +11,9 @@ RIM = true;
 // Internal or External Lock
 INTERNAL_LOCK = false;
 
+// Whether to make a lock at all
+LOCK = false;
+
 // Container Length in mm
 BOX_L_OUTER = 165; //[50:5:300]
 
@@ -280,22 +283,22 @@ if (PART == "container"){
 				division(DIVISIONS_L, BOX_W, BOX_L);
 				};
 			};
-
-			//make space for locking mechanism
-			lock_cutout(fixture_offset);
-			mirror ([0,1,0]){
-				lock_cutout(fixture_offset);
-			};
+            if (LOCK) {
+                //make space for locking mechanism
+                lock_cutout(fixture_offset);
+                mirror ([0,1,0]){
+                    lock_cutout(fixture_offset);
+                };
+            }
 		};
 
 		//add lock fixtures
-		if (INTERNAL_LOCK) {
+		if (LOCK && INTERNAL_LOCK) {
 			lock_internal();
 			mirror([0,1,0]) {
 				lock_internal();
 			};
-		}
-		else {
+		} else if (LOCK && !INTERNAL_LOCK) {
 			for (i = fixture_coordinates) {
 				translate (i) lock_fixture();
 			}
