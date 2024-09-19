@@ -81,6 +81,9 @@ PART_OFFSET = 0.3;
 // Modules
 ///////////////////////////////////////////////////////////////////////////////
 
+// Container modules
+////////////////////
+
 module base_plate(length, width, thickness){
 	corner_coordinates = [ [0,0],[0,length],[width,length],[width,0] ];
 
@@ -240,6 +243,9 @@ module division(count, length, width) {
 	};
 };
 
+// Lid modules
+//////////////
+
 module hinge() {
 	difference () {
 		union () {
@@ -285,7 +291,7 @@ hinge_coordinates = [	[MODBAY_W/2-FIXTURE_W, hinge_offset, 0],
 // Parts
 ///////////////////////////////////////////////////////////////////////////////
 
-// container
+// Container
 ////////////
 
 if (PART == "container"){
@@ -332,7 +338,7 @@ if (PART == "container"){
 	};
 };
 
-// lid
+// Lid
 //////
 
 if (PART == "lid"){
