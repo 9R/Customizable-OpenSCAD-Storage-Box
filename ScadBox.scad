@@ -155,21 +155,21 @@ module modbay_cutout(offset) {
 		cube ([width_l,cut_depth,BOX_H_OUTER-2*RIM_W]);
 };
 
+module add_corner_concave(radius, thickness) {
+	rotate (90,[0,1,0])
+		difference() {
+			cube([radius, radius, thickness]);
+			cylinder(r=radius, h=thickness);
+		};
+};
+
+module cut_corner_convex(radius,rotation,position,thickness) {
+	translate(position)
+		rotate(rotation,[1,0,0]) 
+		add_corner_concave(radius,thickness);
+};
+
 module module_bay_template(thickness, w_mid, w_side,sides_offset, sides_height, wall) {
-
-	module add_corner_concave(radius) {
-		rotate (90,[0,1,0])
-			difference() {
-				cube([radius, radius, thickness]);
-				cylinder(r=radius, h=thickness);
-			};
-	};
-
-	module cut_corner_convex(radius,rotation,position) {
-		translate(position)
-			rotate(rotation,[1,0,0]) 
-			add_corner_concave(radius);
-	};
 
 	module half (thickness, w_mid, w_side, sides_offset, sides_height, wall) {
 		height = RIM ? BOX_H - RIM_W + 1 : BOX_H ;
@@ -186,12 +186,12 @@ module module_bay_template(thickness, w_mid, w_side,sides_offset, sides_height, 
 					radius = 1;
 					translate([0,w_mid +radius,sides_top+radius])
 						rotate (-90,[1,0,0])
-						add_corner_concave(radius);
+						add_corner_concave(radius, thickness);
 				};
 				//side corner top
-				cut_corner_convex(3,90,[0,w_side+w_mid -3,sides_top - 3]);
+				cut_corner_convex(3,90,[0,w_side+w_mid -3,sides_top - 3], thickness);
 				//side corner bottom
-				cut_corner_convex(1,0,[0,w_side+w_mid -1,sides_offset+1]);
+				cut_corner_convex(1,0,[0,w_side+w_mid -1,sides_offset+1], thickness);
 			};
 			if (wall) {
 				translate ([0,w_mid,0]){
@@ -224,7 +224,7 @@ module module_bay() {
 		render () {
 			difference() {
 				// outer
-				module_bay_template( 7, 9, 7.5, 0, 18, true);
+				module_bay_template( 7, 9, 7.5, 0, 19, true);
 				//params: thickness, w_mid, w_side, sides_offset, sides_height, wall)
 				// cutout
 				module_bay_template( 3, 7.5, 5, 3, 15, false);
