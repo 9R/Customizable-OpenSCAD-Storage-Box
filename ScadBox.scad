@@ -2,17 +2,14 @@ $fn=20;
 
 /*[Part]*/
 // Select part to render
-PART = "container"; //[container, lid, latch]
+PART = "container"; //[container, lid, module_snap]
 
 /*[Dimensions]*/
 // Add a top rim
 RIM = true;
 
-// Internal or External Lock
-INTERNAL_LOCK = false;
-
-// Whether to make a lock at all
-LOCK = false;
+// Add Module Bay
+MODULE_BAY = false;
 
 // Container Length in mm
 BOX_L_OUTER = 165; //[50:5:300]
@@ -21,7 +18,7 @@ BOX_L_OUTER = 165; //[50:5:300]
 BOX_W_OUTER = 120; //[50:5:300]
 
 // Container Height in mm
-BOX_H_OUTER =  22; //[20:5:300]
+BOX_H_OUTER =  25; //[25:5:300]
 
 // Lid Thickness in mm
 LID_H = 3; //[3:1:10]
@@ -42,10 +39,10 @@ DIVIDER_THICKNESS = 1; //[1:1:10]
 FLOOR_THICKNESS = 1; //[1:1:10]
 
 // Number of Divisions on the Long Edge
-DIVISIONS_L =1; //[0:1:20]
+DIVISIONS_L = 1; //[0:1:20]
 
 // Number of Divisions on the Short Edge
-DIVISIONS_W =3; //[0:1:20]
+DIVISIONS_W = 3; //[0:1:20]
 
 
 // Width of Lock Fixtures
@@ -54,18 +51,22 @@ FIXTURE_W = 5; //[3:1:10]
 // Thickness of Lock Fixtures
 FIXTURE_THICKNESS = 4; //[3:1:10]
 
-// Width of Interlocking Mechanism
-LOCK_W = 35; //[20:2.5:50]
-
-// Depth of Internal Lock
-INTERNAL_LOCK_DEPTH = 15; //[10:1:20]
-
 // Diamenter of Lock Bolts
 LOCK_BOLT_D = 1.3; //[1:0.1:4]
+
+// Screw insert Diameter
+INSERT_D = 4 ; //[3:0.5:8]
 
 /*[Hidden]*/
 module __customizer_limit__ () {};
 //above 2 lines make sure customizer does not show parameters below
+
+
+// Width of Interlocking Mechanism
+MODBAY_W = 30; //[20:2.5:50]
+
+// Depth of Internal Lock
+MODBAY_DEPTH = 12; //[10:1:20]
 
 BOX_L = BOX_L_OUTER-2*CORNER_RADIUS; // Box Width
 BOX_W = BOX_W_OUTER-2*CORNER_RADIUS; // Box Length
@@ -116,7 +117,7 @@ module box_rim () {
 				};
 			};
 			//lower face
-			translate([0,0,-2*RIM_W]){
+			translate([0,0,-2*RIM_W+1]){
 				linear_extrude(RIM_W/2){
 					offset(r=CORNER_RADIUS) 
 						square( [BOX_W, BOX_L], center=true );
@@ -143,76 +144,101 @@ module box_rim () {
 	};
 };
 
-module fixture_holes(offset_bottom) {
-	union() {
-
-		hole_offset=INTERNAL_LOCK ? -INTERNAL_LOCK_DEPTH/4 : FIXTURE_THICKNESS/2;
-		cut=LOCK_W+WALL_THICKNESS*4;
-		//upper
-		translate([-cut/2,hole_offset,BOX_H-5])
-			rotate (90,[0,1,0])
-			cylinder(cut,LOCK_BOLT_D,LOCK_BOLT_D);
-		//lower
-		translate([-cut/2,hole_offset,offset_bottom])
-			rotate (90,[0,1,0])
-			cylinder(cut,LOCK_BOLT_D,LOCK_BOLT_D);
-	};
+module modbay_cutout(offset) {
+  cut_depth = MODULE_BAY ? MODBAY_DEPTH : RIM_W+FIXTURE_THICKNESS;
+	cut_offset = MODULE_BAY ? offset-cut_depth/2 : offset;
+	width = 15;
+	width_l = 30;
+	translate ([-width/2,cut_offset,0]) 
+	  cube ([width,cut_depth,BOX_H*2]);
+	translate ([-width_l/2,cut_offset,0]) 
+	  cube ([width_l,cut_depth,BOX_H_OUTER-2*RIM_W]);
 };
 
-module lock_fixture() {
-	offset_bottom=FIXTURE_THICKNESS;
-	difference () {
-		translate([0,0,offset_bottom])
-			union() {
-				translate([0,0,-FIXTURE_THICKNESS])
-					cube([FIXTURE_W,0.3,BOX_H-2]);
-				translate([0,0.3,0])
-					cube([FIXTURE_W,FIXTURE_THICKNESS,BOX_H-offset_bottom]);
-				translate([0,0.3,0])
-					//rounded bottom
-					intersection() {
-						rotate(90, [0,1,0])
-							cylinder (r=FIXTURE_THICKNESS,h=FIXTURE_W);
-						translate([0,0,-FIXTURE_THICKNESS])
-							cube([FIXTURE_W,FIXTURE_THICKNESS,FIXTURE_THICKNESS]);
-					};
-			};
-		//fixture holes
-		fixture_holes(offset_bottom);
-	};
-};
+module module_bay_template(thickness, w_mid, w_side,sides_offset, sides_height, wall) {
 
-module lock_internal() {
-	width=LOCK_W;
-	depth=INTERNAL_LOCK_DEPTH;
-	translate ([0,BOX_L_OUTER/2,1])
-		difference () {
-			linear_extrude(BOX_H-RIM_W)
-				difference () {
-					offset(3) square([width, depth], center=true);
-					square([width, depth], center=true);
+	module add_corner_concave(radius) {
+				  rotate (90,[0,1,0])
+				difference() {
+					cube([radius, radius, thickness]);
+					cylinder(r=radius, h=thickness);
 				};
-			translate([-width,0,0]) cube([width*2,INTERNAL_LOCK_DEPTH,BOX_H]);
-			fixture_holes(FIXTURE_THICKNESS+2);
+	};
+
+	module cut_corner_convex(radius,rotation,position) {
+		translate(position)
+		  rotate(rotation,[1,0,0]) 
+		  add_corner_concave(radius);
+	};
+
+module half (thickness, w_mid, w_side, sides_offset, sides_height, wall) {
+	height = RIM ? BOX_H - RIM_W + 1 : BOX_H ;
+	sides_top = sides_height + sides_offset;
+	union () {
+		difference () {
+			union () {
+			  //center
+				cube([thickness, w_mid,height]);
+				//sides
+				translate([0,w_mid ,sides_offset])
+					cube([thickness, w_side,sides_height]);
+				//top corner center/side
+				radius = 1;
+				translate([0,w_mid +radius,sides_top+radius])
+					rotate (-90,[1,0,0])
+					add_corner_concave(radius);
+			};
+			//side corner top
+			cut_corner_convex(3,90,[0,w_side+w_mid -3,sides_top - 3]);
+			//side corner bottom
+			cut_corner_convex(1,0,[0,w_side+w_mid -1,sides_offset+1]);
 		};
+		if (wall) {
+			translate ([0,w_mid,0]){
+				cube([WALL_THICKNESS*1.5,w_side, height]);
+			};
+		};
+	};
 };
 
-module lock_cutout(offset) {
-	cut_depth = INTERNAL_LOCK ? INTERNAL_LOCK_DEPTH : RIM_W+FIXTURE_THICKNESS;
-	cut_offset = INTERNAL_LOCK ? offset-cut_depth/2 : offset;
-	translate ([-LOCK_W/2,cut_offset,-3])
-		linear_extrude(BOX_H*2)
-		//		offset(r=CORNER_RADIUS)
-		square([LOCK_W,cut_depth]);
+	module insert_hole (h){
+	  //cut hole for screw insert
+	  translate ([3,0,h])
+		rotate (90,[0,1,0])
+	  cylinder(d=INSERT_D,h=3);
+	};
+
+	difference () {
+		union () {
+			half( thickness, w_mid, w_side, sides_offset, sides_height, wall);
+			mirror([0,1,0])
+				half( thickness, w_mid, w_side, sides_offset, sides_height, wall);
+		};
+		insert_hole(5);
+		insert_hole(15);
+	};
+};
+
+module module_bay() {
+  translate([0,BOX_L_OUTER/2,0]) rotate(-90, [0,0,1])
+	render () {
+  difference() {
+	  // outer
+		module_bay_template( 7, 9, 7.5, 0, 18, true);
+                //params: thickness, w_mid, w_side, sides_offset, sides_height, wall)
+		// cutout
+		module_bay_template( 3, 7.5, 5, 3, 15, false);
+	};
+};
 };
 
 module division(count, length, width) {
-	step_x=width/(count+1) ;
+  step_x=width/(count+1) ;
 	for (i=[1:count]) {
-		translate ([-width/2+i*step_x,0,BOX_H/2-0.5])
-			cube([DIVIDER_THICKNESS,length+RIM_W,BOX_H-RIM_W],center=true);
+	translate ([-width/2+i*step_x,0,BOX_H/2-0.5])
+		cube([DIVIDER_THICKNESS,length+RIM_W,BOX_H-RIM_W],center=true);
+		};
 	};
-};
 
 module hinge() {
 	difference () {
@@ -249,14 +275,11 @@ module lid_phase(){
 // Derived Variables
 ///////////////////////////////////////////////////////////////////////////////
 
-fixture_offset = BOX_L/2 + CORNER_RADIUS;
-
-fixture_coordinates = [ [LOCK_W/2,fixture_offset],
-										[-LOCK_W/2-FIXTURE_W,fixture_offset]];
+modbay_offset = BOX_L/2 + CORNER_RADIUS;
 
 hinge_offset = BOX_L/2 + CORNER_RADIUS;
-hinge_coordinates = [	[LOCK_W/2-FIXTURE_W, hinge_offset, 0],
-									[-LOCK_W/2, hinge_offset, 0]];
+hinge_coordinates = [	[MODBAY_W/2-FIXTURE_W, hinge_offset, 0],
+                      [-MODBAY_W/2, hinge_offset, 0]];
 
 ///////////////////////////////////////////////////////////////////////////////
 // Parts
@@ -266,52 +289,45 @@ hinge_coordinates = [	[LOCK_W/2-FIXTURE_W, hinge_offset, 0],
 ////////////
 
 if (PART == "container"){
-	union() {
-		difference (){
-			union () {
-				//create base shape
-				container_hull();
+	render () {
+		union() {
+			difference (){
+				union () {
+					//create base shape
+					container_hull();
 
-				//add top rim
-				if (RIM){
-					translate([0,0,BOX_H]) {
-						box_rim();
+					//add top rim
+					if (RIM){
+						translate([0,0,BOX_H]) {
+							box_rim();
+						};
+					};
+
+					//add division
+					if (DIVISIONS_W > 0) {
+						division(DIVISIONS_W, BOX_L, BOX_W);
+					};
+					if (DIVISIONS_L > 0) {
+						rotate (90,[0,0,1])
+							division(DIVISIONS_L, BOX_W, BOX_L);
 					};
 				};
-
-				//add division
-				if (DIVISIONS_W > 0) {
-					division(DIVISIONS_W, BOX_L, BOX_W);
-				};
-				if (DIVISIONS_L > 0) {
-					rotate (90,[0,0,1])
-						division(DIVISIONS_L, BOX_W, BOX_L);
-				};
+				if (MODULE_BAY) {
+					//make space for module bay
+					modbay_cutout(modbay_offset);
+					mirror ([0,1,0]){
+						modbay_cutout(modbay_offset);
+					};
+				}
 			};
-			if (LOCK) {
-				//make space for locking mechanism
-				lock_cutout(fixture_offset);
-				mirror ([0,1,0]){
-					lock_cutout(fixture_offset);
+
+			//add module_bay
+			if ( MODULE_BAY ) {
+				module_bay();
+				mirror([0,1,0]) {
+					module_bay();
 				};
 			}
-		};
-
-		//add lock fixtures
-		if (LOCK && INTERNAL_LOCK) {
-			lock_internal();
-			mirror([0,1,0]) {
-				lock_internal();
-			};
-		} else if (LOCK && !INTERNAL_LOCK) {
-			for (i = fixture_coordinates) {
-				translate (i) lock_fixture();
-			}
-			mirror ([0,1,0]){
-				for (i = fixture_coordinates) {
-					translate (i) lock_fixture();
-				};
-			};
 		};
 	};
 };
@@ -330,10 +346,10 @@ if (PART == "lid"){
 				};
 			};
 			//make space for latch / hinge
-			lock_cutout(fixture_offset);
+			modbay_cutout(modbay_offset);
 			lid_phase();
 			mirror ([0,1,0])
-				lock_cutout(fixture_offset);
+				modbay_cutout(modbay_offset);
 			mirror ([1,0,0])
 				lid_phase();
 		};
@@ -345,7 +361,7 @@ if (PART == "lid"){
 };
 
 // latch
-if (PART == "latch"){
+if (PART == "module_snap"){
 	union () {
 		cylinder(r=100,h=1);
 		linear_extrude (3)
