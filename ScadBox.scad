@@ -11,6 +11,9 @@ RIM = true;
 // Add Module Bay
 MODULE_BAY = false;
 
+// Number of MODBAY Screws
+MOD_SCREWS = 2; //[2,4]
+
 // Container Length in mm
 BOX_L_OUTER = 165; //[50:5:300]
 
@@ -277,6 +280,100 @@ module lid_phase() {
 		rotate (45,[1,0,0]) cube([BOX_L,LID_H,LID_H]);
 };
 
+// Module bay modules
+/////////////////////
+
+module mod_template (){
+	screw_coordinates = MOD_SCREWS == 2 ? [[0,3,5],[0,3,15]] : [[0,3,5],[0,3,15],[9,3,13],[-9,3,13]];
+
+	module mod_center () {
+		translate ([0,0,0])
+			cube([7.4,3,25]);
+	};
+
+	module mod_side () {
+		translate ([0,0,3])
+			hull() {
+				translate([9.4, 3, 11.7])
+					rotate(90,[1,0,0])
+					cylinder (d=6,h=3);
+				translate([11.4, 3, 1.1])
+					rotate(90,[1,0,0])
+					cylinder (d=2,h=3);
+				cube ([1,3,14.7]);
+			};
+	};
+
+	module mod_cutout () {
+		hull () {
+			cube ([7.4,3,1]);
+
+			translate([0,0,10])
+				cube ([1,3,1]);
+			translate([4.4,3,8])
+				rotate(90,[1,0,0])
+				cylinder (d=6,h=3);
+		};
+	};
+	module mod_center_tip_clip () {
+	};
+
+	module screw_hole () {
+		hull (){
+			cylinder (d=6.2,h=0.25);
+			translate ([0,0,2])
+				cylinder (d=3.2,h=0.1);
+		};
+		cylinder (d=3.2,h=10);
+	};
+
+	module nub (){
+		translate ([0,1.5,1.5])
+			rotate(90,[1,0,0]) 
+			hull () {
+				cube([7,3,3], center=true);
+				translate ([0,3.5,-1.5])
+					cylinder (d=7,h=3);
+			};
+	};
+
+	module half_module() {
+		mod_center();
+		mod_side();
+		translate([8.4, 0, 18.7])
+			rotate (90, [0, 0, 1])
+			add_corner_concave(1, 3);
+	};
+
+	difference() {
+		union () {
+			half_module();
+			mirror([1, 0, 0])
+				half_module();
+		};
+		translate ([0, 1, 0]){
+			mod_cutout();
+			mirror([1,0,0]){
+				mod_cutout();
+			};
+		};
+		for (i = screw_coordinates ){
+			translate (i)
+				rotate (90,[1,0,0])
+				screw_hole();
+		};
+	};
+	difference() {
+		nub();
+		translate (screw_coordinates[0])
+			rotate (90,[1,0,0])
+			screw_hole();
+	};
+};
+
+module mod_clip (){
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 // Derived Variables
 ///////////////////////////////////////////////////////////////////////////////
@@ -366,11 +463,16 @@ if (PART == "lid"){
 	};
 };
 
-// latch
+// Modbay module clip
+/////////////////////
+
 if (PART == "module_snap"){
-	union () {
-		cylinder(r=100,h=1);
-		linear_extrude (3)
-			text("Sry, not designed yet. :(",halign="center",valign="center");
+	render () {
+		union () {
+			mod_template();
+		};
 	};
 };
+//		cylinder(r=100,h=1);
+//		linear_extrude (3)
+//			text("Sry, not designed yet. :(",halign="center",valign="center");
