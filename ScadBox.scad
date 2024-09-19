@@ -145,67 +145,67 @@ module box_rim () {
 };
 
 module modbay_cutout(offset) {
-  cut_depth = MODULE_BAY ? MODBAY_DEPTH : RIM_W+FIXTURE_THICKNESS;
+	cut_depth = MODULE_BAY ? MODBAY_DEPTH : RIM_W+FIXTURE_THICKNESS;
 	cut_offset = MODULE_BAY ? offset-cut_depth/2 : offset;
 	width = 15;
 	width_l = 30;
 	translate ([-width/2,cut_offset,0]) 
-	  cube ([width,cut_depth,BOX_H*2]);
+		cube ([width,cut_depth,BOX_H*2]);
 	translate ([-width_l/2,cut_offset,0]) 
-	  cube ([width_l,cut_depth,BOX_H_OUTER-2*RIM_W]);
+		cube ([width_l,cut_depth,BOX_H_OUTER-2*RIM_W]);
 };
 
 module module_bay_template(thickness, w_mid, w_side,sides_offset, sides_height, wall) {
 
 	module add_corner_concave(radius) {
-				  rotate (90,[0,1,0])
-				difference() {
-					cube([radius, radius, thickness]);
-					cylinder(r=radius, h=thickness);
-				};
+		rotate (90,[0,1,0])
+			difference() {
+				cube([radius, radius, thickness]);
+				cylinder(r=radius, h=thickness);
+			};
 	};
 
 	module cut_corner_convex(radius,rotation,position) {
 		translate(position)
-		  rotate(rotation,[1,0,0]) 
-		  add_corner_concave(radius);
+			rotate(rotation,[1,0,0]) 
+			add_corner_concave(radius);
 	};
 
-module half (thickness, w_mid, w_side, sides_offset, sides_height, wall) {
-	height = RIM ? BOX_H - RIM_W + 1 : BOX_H ;
-	sides_top = sides_height + sides_offset;
-	union () {
-		difference () {
-			union () {
-			  //center
-				cube([thickness, w_mid,height]);
-				//sides
-				translate([0,w_mid ,sides_offset])
-					cube([thickness, w_side,sides_height]);
-				//top corner center/side
-				radius = 1;
-				translate([0,w_mid +radius,sides_top+radius])
-					rotate (-90,[1,0,0])
-					add_corner_concave(radius);
+	module half (thickness, w_mid, w_side, sides_offset, sides_height, wall) {
+		height = RIM ? BOX_H - RIM_W + 1 : BOX_H ;
+		sides_top = sides_height + sides_offset;
+		union () {
+			difference () {
+				union () {
+					//center
+					cube([thickness, w_mid,height]);
+					//sides
+					translate([0,w_mid ,sides_offset])
+						cube([thickness, w_side,sides_height]);
+					//top corner center/side
+					radius = 1;
+					translate([0,w_mid +radius,sides_top+radius])
+						rotate (-90,[1,0,0])
+						add_corner_concave(radius);
+				};
+				//side corner top
+				cut_corner_convex(3,90,[0,w_side+w_mid -3,sides_top - 3]);
+				//side corner bottom
+				cut_corner_convex(1,0,[0,w_side+w_mid -1,sides_offset+1]);
 			};
-			//side corner top
-			cut_corner_convex(3,90,[0,w_side+w_mid -3,sides_top - 3]);
-			//side corner bottom
-			cut_corner_convex(1,0,[0,w_side+w_mid -1,sides_offset+1]);
-		};
-		if (wall) {
-			translate ([0,w_mid,0]){
-				cube([WALL_THICKNESS*1.5,w_side, height]);
+			if (wall) {
+				translate ([0,w_mid,0]){
+					cube([WALL_THICKNESS*1.5,w_side, height]);
+				};
 			};
 		};
 	};
-};
 
 	module insert_hole (h){
-	  //cut hole for screw insert
-	  translate ([3,0,h])
-		rotate (90,[0,1,0])
-	  cylinder(d=INSERT_D,h=3);
+		//cut hole for screw insert
+		translate ([3,0,h])
+			rotate (90,[0,1,0])
+			cylinder(d=INSERT_D,h=3);
 	};
 
 	difference () {
@@ -220,25 +220,25 @@ module half (thickness, w_mid, w_side, sides_offset, sides_height, wall) {
 };
 
 module module_bay() {
-  translate([0,BOX_L_OUTER/2,0]) rotate(-90, [0,0,1])
-	render () {
-  difference() {
-	  // outer
-		module_bay_template( 7, 9, 7.5, 0, 18, true);
-                //params: thickness, w_mid, w_side, sides_offset, sides_height, wall)
-		// cutout
-		module_bay_template( 3, 7.5, 5, 3, 15, false);
-	};
-};
+	translate([0,BOX_L_OUTER/2,0]) rotate(-90, [0,0,1])
+		render () {
+			difference() {
+				// outer
+				module_bay_template( 7, 9, 7.5, 0, 18, true);
+				//params: thickness, w_mid, w_side, sides_offset, sides_height, wall)
+				// cutout
+				module_bay_template( 3, 7.5, 5, 3, 15, false);
+			};
+		};
 };
 
 module division(count, length, width) {
-  step_x=width/(count+1) ;
+	step_x=width/(count+1) ;
 	for (i=[1:count]) {
-	translate ([-width/2+i*step_x,0,BOX_H/2-0.5])
-		cube([DIVIDER_THICKNESS,length+RIM_W,BOX_H-RIM_W],center=true);
-		};
+		translate ([-width/2+i*step_x,0,BOX_H/2-0.5])
+			cube([DIVIDER_THICKNESS,length+RIM_W,BOX_H-RIM_W],center=true);
 	};
+};
 
 module hinge() {
 	difference () {
@@ -266,7 +266,7 @@ module hinge() {
 	};
 };
 
-module lid_phase(){
+module lid_phase() {
 	translate ([BOX_L/2-FIXTURE_W,BOX_W/2+0.5,LID_H-2])
 		rotate (45,[1,0,0]) cube([BOX_L,LID_H,LID_H]);
 };
@@ -279,7 +279,7 @@ modbay_offset = BOX_L/2 + CORNER_RADIUS;
 
 hinge_offset = BOX_L/2 + CORNER_RADIUS;
 hinge_coordinates = [	[MODBAY_W/2-FIXTURE_W, hinge_offset, 0],
-                      [-MODBAY_W/2, hinge_offset, 0]];
+									[-MODBAY_W/2, hinge_offset, 0]];
 
 ///////////////////////////////////////////////////////////////////////////////
 // Parts
