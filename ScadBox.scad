@@ -12,7 +12,7 @@ RIM = true;
 MODULE_BAY = false;
 
 // Number of MODBAY Screws
-MOD_SCREWS = 2; //[2,4]
+MOD_SCREWS = "2vertical"; //[2vertical, 2horizontal, 4]
 
 // Container Length in mm
 BOX_L_OUTER = 165; //[50:5:300]
@@ -68,9 +68,13 @@ module __customizer_limit__ () {};
 // Width of Interlocking Mechanism
 MODBAY_W = 30; //[20:2.5:50]
 
-// Depth of Internal Lock
+// Depth of Modbay
 MODBAY_DEPTH = 12; //[10:1:20]
 
+// Modbay Screw Coordinates
+MODBAY_SCREW_COORDINATES = MOD_SCREWS == "2vertical" ? [[0,3,5],[0,3,15]] :
+	                    MOD_SCREWS == "2horizontal" ? [[9,3,13],[-9,3,13]] :
+											                              [[0,3,5],[0,3,15],[9,3,13],[-9,3,13]];
 BOX_L = BOX_L_OUTER-2*CORNER_RADIUS; // Box Width
 BOX_W = BOX_W_OUTER-2*CORNER_RADIUS; // Box Length
 BOX_H = BOX_H_OUTER; // Box Height
@@ -207,11 +211,17 @@ module module_bay_template(thickness, w_mid, w_side,sides_offset, sides_height, 
 		};
 	};
 
-	module insert_hole (h){
+	module insert_hole (coordinate){
 		//cut hole for screw insert
-		translate ([3,0,h])
+		y = coordinate[0];
+		x = coordinate[1];
+		z = coordinate[2];
+		echo (coordinate);
+		echo (y);
+		echo (z);
+		translate ([3.5,y,z])
 			rotate (90,[0,1,0])
-			cylinder(d=INSERT_D,h=3);
+			cylinder(d=INSERT_D,h=3, center=true);
 	};
 
 	difference () {
@@ -220,8 +230,10 @@ module module_bay_template(thickness, w_mid, w_side,sides_offset, sides_height, 
 			mirror([0,1,0])
 				half( thickness, w_mid, w_side, sides_offset, sides_height, wall);
 		};
-		insert_hole(5);
-		insert_hole(15);
+
+		for ( i = MODBAY_SCREW_COORDINATES ) {
+		  #insert_hole(i);
+		};
 	};
 };
 
@@ -284,7 +296,6 @@ module lid_phase() {
 /////////////////////
 
 module mod_template (){
-	screw_coordinates = MOD_SCREWS == 2 ? [[0,3,5],[0,3,15]] : [[0,3,5],[0,3,15],[9,3,13],[-9,3,13]];
 
 	module mod_center () {
 		translate ([0,0,0])
@@ -357,7 +368,7 @@ module mod_template (){
 				mod_cutout();
 			};
 		};
-		for (i = screw_coordinates ){
+		for (i = MODBAY_SCREW_COORDINATES ){
 			translate (i)
 				rotate (90,[1,0,0])
 				screw_hole();
@@ -365,7 +376,7 @@ module mod_template (){
 	};
 	difference() {
 		nub();
-		translate (screw_coordinates[0])
+		translate (MODBAY_SCREW_COORDINATES[0])
 			rotate (90,[1,0,0])
 			screw_hole();
 	};
