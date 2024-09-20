@@ -12,7 +12,7 @@ RIM = true;
 MODULE_BAY = false;
 
 // Number of MODBAY Screws
-MOD_SCREWS = "2vertical"; //[2vertical, 2horizontal, 4]
+MOD_SCREWS = "4"; //[2vertical, 2horizontal, 4]
 
 // Container Length in mm
 BOX_L_OUTER = 165; //[50:5:300]
@@ -72,9 +72,16 @@ MODBAY_W = 30; //[20:2.5:50]
 MODBAY_DEPTH = 12; //[10:1:20]
 
 // Modbay Screw Coordinates
-MODBAY_SCREW_COORDINATES = MOD_SCREWS == "2vertical" ? [[0,3,5],[0,3,15]] :
-	                    MOD_SCREWS == "2horizontal" ? [[9,3,13],[-9,3,13]] :
-											                              [[0,3,5],[0,3,15],[9,3,13],[-9,3,13]];
+ MBCs =[
+ [[0,3,5],[0,3,15]], // 2vert
+ [[9,3,13],[-9,3,13]], // 2horz
+ [[0,3,5],[0,3,15],[9,3,13],[-9,3,13]] //4
+ ];
+
+MODBAY_SCREW_COORDINATES = MOD_SCREWS == "2vertical" ? MBCs[0] :
+	                    MOD_SCREWS == "2horizontal" ? MBCs[1] :
+											                              MBCs[2];
+
 BOX_L = BOX_L_OUTER-2*CORNER_RADIUS; // Box Width
 BOX_W = BOX_W_OUTER-2*CORNER_RADIUS; // Box Length
 BOX_H = BOX_H_OUTER; // Box Height
@@ -295,11 +302,23 @@ module lid_phase() {
 // Module bay modules
 /////////////////////
 
-module mod_template (){
+module mod_cutout () {
+	hull () {
+		cube ([7.4,3,1]);
+
+		translate([0,0,10])
+			cube ([1,3,1]);
+		translate([4.4,3,8])
+			rotate(90,[1,0,0])
+			cylinder (d=6,h=3);
+	};
+};
+
+module mod_template (screw_coordinates){
 
 	module mod_center () {
 		translate ([0,0,0])
-			cube([7.4,3,25]);
+			cube([7.4,3,BOX_H-2]);
 	};
 
 	module mod_side () {
@@ -312,39 +331,6 @@ module mod_template (){
 					rotate(90,[1,0,0])
 					cylinder (d=2,h=3);
 				cube ([1,3,14.7]);
-			};
-	};
-
-	module mod_cutout () {
-		hull () {
-			cube ([7.4,3,1]);
-
-			translate([0,0,10])
-				cube ([1,3,1]);
-			translate([4.4,3,8])
-				rotate(90,[1,0,0])
-				cylinder (d=6,h=3);
-		};
-	};
-	module mod_center_tip_clip () {
-	};
-
-	module screw_hole () {
-		hull (){
-			cylinder (d=6.2,h=0.25);
-			translate ([0,0,2])
-				cylinder (d=3.2,h=0.1);
-		};
-		cylinder (d=3.2,h=10);
-	};
-
-	module nub (){
-		translate ([0,1.5,1.5])
-			rotate(90,[1,0,0]) 
-			hull () {
-				cube([7,3,3], center=true);
-				translate ([0,3.5,-1.5])
-					cylinder (d=7,h=3);
 			};
 	};
 
@@ -362,23 +348,39 @@ module mod_template (){
 			mirror([1, 0, 0])
 				half_module();
 		};
-		translate ([0, 1, 0]){
-			mod_cutout();
-			mirror([1,0,0]){
-				mod_cutout();
-			};
-		};
-		for (i = MODBAY_SCREW_COORDINATES ){
+		for (i = screw_coordinates ){
 			translate (i)
 				rotate (90,[1,0,0])
 				screw_hole();
 		};
 	};
-	difference() {
-		nub();
-		translate (MODBAY_SCREW_COORDINATES[0])
-			rotate (90,[1,0,0])
-			screw_hole();
+};
+
+module screw_hole () {
+	hull (){
+		cylinder (d=6.2,h=0.25);
+		translate ([0,0,2])
+			cylinder (d=3.2,h=0.1);
+	};
+	cylinder (d=3.2,h=10);
+};
+
+module clip_nub (){
+	translate ([0,1.5,1.5])
+		rotate(90,[1,0,0]) 
+		hull () {
+			cube([7,3,3], center=true);
+			translate ([0,3.5,-1.5])
+				cylinder (d=7,h=3);
+		};
+};
+
+module clip_lock (){
+	translate ([0, 1, 0]){
+		mod_cutout();
+		mirror([1,0,0]){
+			mod_cutout();
+		};
 	};
 };
 
@@ -479,9 +481,20 @@ if (PART == "lid"){
 
 if (PART == "module_snap"){
 	render () {
-		union () {
-			mod_template();
+		difference () {
+			union () {
+				//screw positions is overridden
+				mod_template(MBCs[0]);
+				mod_clip();
+			};
+			clip_lock();
 		};
+	difference() {
+		clip_nub();
+		translate (MBCs[0][0])
+			rotate (90,[1,0,0])
+			screw_hole();
+	};
 	};
 };
 //		cylinder(r=100,h=1);
