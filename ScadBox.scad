@@ -1,4 +1,4 @@
-$fn=20;
+$fn= $preview ? 32 : 64;
 
 /*[Part]*/
 // Select part to render
