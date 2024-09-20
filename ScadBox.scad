@@ -371,14 +371,23 @@ module lid_phase()
 // Module bay modules
 /////////////////////
 
-module mod_cutout()
+module mod_cutout(positive = true)
 {
+    // dimensions
+    lock_w = 15;
+    corner_r = 3;
+    thickness = 3;
+    lock_offset = 0.1;
+    lock_height = 10;
+    w = positive ? lock_w : lock_w + lock_offset;
+    r = positive ? corner_r : corner_r + lock_offset;
+    h = positive ? lock_height : lock_height + lock_offset;
     hull()
     {
-        cube([ 7.4, 3, 1 ]);
+        cube([ w / 2, thickness, 1 ]);
 
-        translate([ 0, 0, 10 ]) cube([ 1, 3, 1 ]);
-        translate([ 4.4, 3, 8 ]) rotate(90, [ 1, 0, 0 ]) cylinder(d = 6, h = 3);
+        translate([ 0, 0, h ]) cube([ 1, thickness, 1 ]);
+        translate([ w / 2 - r, corner_r, 8 ]) rotate(90, [ 1, 0, 0 ]) cylinder(r = r, h = thickness);
     };
 };
 
@@ -389,7 +398,7 @@ module mod_template(screw_coordinates)
     {
         translate([ 0, 0, 0 ])
         {
-            cube([ 7.4, 3, BOX_H - 2 ]);
+            cube([ MOD_W / 2, 3, BOX_H - 2 ]);
         };
     };
 
@@ -399,9 +408,9 @@ module mod_template(screw_coordinates)
         {
             hull()
             {
-                translate([ 9.4, 3, 11.7 ]) rotate(90, [ 1, 0, 0 ]) cylinder(d = 6, h = 3);
-                translate([ 11.4, 3, 1.1 ]) rotate(90, [ 1, 0, 0 ]) cylinder(d = 2, h = 3);
-                cube([ 1, 3, 14.7 ]);
+                translate([ 9.5, 3, 11.7 ]) rotate(90, [ 1, 0, 0 ]) cylinder(d = 6, h = 3);
+                translate([ 11.5, 3, 1.1 ]) rotate(90, [ 1, 0, 0 ]) cylinder(d = 2, h = 3);
+                cube([ 1, 3, 15 ]);
             };
         };
     };
