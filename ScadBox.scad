@@ -455,19 +455,44 @@ module clip_nub()
     };
 };
 
-module clip_lock()
+module clip_tip()
 {
-    translate([ 0, 1, 0 ])
+    radius = 2.9;
+    w = 14.8;
+    h = 7.8;
+    coord = [[w / 2 - radius, 3, h], [-w / 2 + radius, 3, h]];
+    difference()
     {
-        mod_cutout();
-        mirror([ 1, 0, 0 ])
+        translate([ 0, -1, mod_template_height ]) clip_lock(true);
+        translate([ 0, 0, mod_template_height ])
         {
-            mod_cutout();
+            clip_nub();
         };
     };
 };
 
-module mod_clip() {};
+module phase_edge(offset, w, a = 45)
+{
+    translate([ 0, 0, offset ]) //
+    {
+        rotate(a, [ 1, 0, 0 ])
+        {
+            cube([ w, 12, 2 ], center = true);
+        };
+    };
+};
+
+module clip_lock(positive)
+{
+    translate([ 0, 1, 0 ])
+    {
+        mod_cutout(positive);
+        mirror([ 1, 0, 0 ])
+        {
+            mod_cutout(positive);
+        };
+    };
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // Derived Variables
@@ -479,6 +504,7 @@ hinge_offset = BOX_L / 2 + CORNER_RADIUS;
 hinge_coordinates = [[MODBAY_W / 2 - FIXTURE_W, hinge_offset, 0], [-MODBAY_W / 2, hinge_offset, 0]];
 
 mod_template_height = BOX_H - RIM_W;
+
 ///////////////////////////////////////////////////////////////////////////////
 // Parts
 ///////////////////////////////////////////////////////////////////////////////
@@ -574,6 +600,14 @@ if (PART == "lid")
     };
 };
 
+module mod_snap_bottom_chamfer()
+{
+    hull()
+    {
+        translate([ 3.5, 0, -3 ]) cube(3);
+        translate([ 7.6, 0, 0 ]) cube(3);
+    };
+};
 // Modbay module clip
 /////////////////////
 
@@ -581,20 +615,38 @@ if (PART == "module_snap")
 {
     render()
     {
-        difference()
+        union()
         {
-            union()
+            difference()
             {
-                // screw positions is overridden
-                mod_template(MBCs[0]);
-                mod_clip();
+                union()
+                {
+                    // screw positions is overridden
+                    mod_template(MBCs[0]);
+                    clip_tip();
+                };
+                clip_lock(false);
+                phase_edge(32, 15);
+                mod_snap_bottom_chamfer();
+                mirror([ 1, 0, 0 ]) mod_snap_bottom_chamfer();
+                //                translate([ -4, 0, -2 ]) rotate(90, [ 0, 0, 1 ])
+                // #phase_edge(0, 15, 40);
+                // flex-joint
+                translate([ 0, 0, 19.2 ])
+                {
+                    minkowski()
+                    {
+                        cube([ 25, 3.5, 2 ], center = true);
+                        sphere(d = 1);
+                    };
+                };
             };
-            clip_lock();
-        };
-        difference()
-        {
-            clip_nub();
-            translate(MBCs[0][0]) rotate(90, [ 1, 0, 0 ]) screw_hole();
+            difference()
+            {
+                clip_nub();
+                translate(MBCs[0][0]) rotate(90, [ 1, 0, 0 ]) screw_hole();
+                phase_edge(-3, 10, 47);
+            };
         };
     };
 };
