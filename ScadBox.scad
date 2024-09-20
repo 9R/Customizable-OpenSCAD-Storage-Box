@@ -1,4 +1,4 @@
-$fn = $preview ? 32 : 64;
+$fn = $preview ? 64 : 64;
 
 /*[Part]*/
 // Select part to render
@@ -81,6 +81,9 @@ MODBAY_SCREW_COORDINATES = MOD_SCREWS == "2vertical" ? MBCs[0] : MOD_SCREWS == "
 BOX_L = BOX_L_OUTER - 2 * CORNER_RADIUS; // Box Width
 BOX_W = BOX_W_OUTER - 2 * CORNER_RADIUS; // Box Length
 BOX_H = BOX_H_OUTER;                     // Box Height
+
+// width module center
+MOD_W = 15;
 
 POST_OFFSET = 10;
 
@@ -289,10 +292,10 @@ module module_bay()
         difference()
         {
             // shell
-            module_bay_template(7, 9, 7.5, 0, 19, true);
+            module_bay_template(7, 9, MOD_W / 2, 0, 19, true);
             // params: thickness, w_mid, w_side, sides_offset, sides_height, wall)
             //  cutout
-            module_bay_template(3, 7.5, 5, 3, 15, false);
+            module_bay_template(3, MOD_W / 2 + 0.2, 5.1, 3, 15.2, false);
         };
     };
 };
