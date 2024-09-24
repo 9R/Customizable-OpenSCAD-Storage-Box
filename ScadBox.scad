@@ -184,17 +184,21 @@ module box_rim()
 
 module modbay_cutout(offset)
 {
-    cut_depth = MODULE_BAY ? MODBAY_DEPTH : RIM_W + FIXTURE_THICKNESS;
-    cut_offset = MODULE_BAY ? offset - cut_depth / 2 : offset;
+    cut_depth = MODBAY_DEPTH;
+    cut_offset = offset - cut_depth / 2;
+    echo(cut_depth);
+    echo(cut_offset);
     width = 15;
     width_l = 30;
     translate([ -width / 2, cut_offset, 0 ])
     {
         cube([ width, cut_depth, BOX_H * 2 ]);
     };
-    translate([ -width_l / 2, cut_offset, 0 ])
+
+    translate([ 0, modbay_offset - 4, 0 ]) minkowski()
     {
-        cube([ width_l, cut_depth, BOX_H_OUTER - 2 * RIM_W ]);
+        mod_template();
+        translate([ 0, 0, 0 ]) cube([ .1, 4, 2 ], center = true);
     };
 };
 
@@ -218,51 +222,8 @@ module cut_corner_convex(radius, rotation, position, thickness)
     };
 };
 
-module module_bay_template(thickness, w_mid, w_side, sides_offset, sides_height, wall)
+module module_bay()
 {
-
-    module half(thickness, w_mid, w_side, sides_offset, sides_height, wall)
-    {
-        height = RIM ? BOX_H - RIM_W + 1 : BOX_H;
-        sides_top = sides_height + sides_offset;
-        union()
-        {
-            difference()
-            {
-                union()
-                {
-                    // center
-                    cube([ thickness, w_mid, height ]);
-                    // sides
-                    translate([ 0, w_mid, sides_offset ])
-                    {
-                        cube([ thickness, w_side, sides_height ]);
-                    };
-                    // top corner center/side
-                    radius = 1;
-                    translate([ 0, w_mid + radius, sides_top + radius ])
-                    {
-                        rotate(-90, [ 1, 0, 0 ])
-                        {
-                            add_corner_concave(radius, thickness);
-                        };
-                    };
-                };
-                // side corner top
-                cut_corner_convex(3, 90, [ 0, w_side + w_mid - 3, sides_top - 3 ], thickness);
-                // side corner bottom
-                cut_corner_convex(1, 0, [ 0, w_side + w_mid - 1, sides_offset + 1 ], thickness);
-            };
-            if (wall)
-            {
-                translate([ 0, w_mid, 0 ])
-                {
-                    cube([ WALL_THICKNESS * 1.5, w_side, height ]);
-                };
-            };
-        };
-    };
-
     module insert_hole(coordinate)
     {
         // cut hole for screw insert
@@ -278,35 +239,32 @@ module module_bay_template(thickness, w_mid, w_side, sides_offset, sides_height,
         };
     };
 
-    difference()
-    {
-        union()
-        {
-            half(thickness, w_mid, w_side, sides_offset, sides_height, wall);
-            mirror([ 0, 1, 0 ])
-            {
-                half(thickness, w_mid, w_side, sides_offset, sides_height, wall);
-            }
-        };
-
-        for (i = MODBAY_SCREW_COORDINATES)
-        {
-            insert_hole(i);
-        };
-    };
-};
-
-module module_bay()
-{
     translate([ 0, BOX_L_OUTER / 2, 0 ]) rotate(-90, [ 0, 0, 1 ]) render()
     {
         difference()
         {
             // shell
-            module_bay_template(7, 9, MOD_W / 2, 0, 19, true);
+            translate([ 1, 0, 0 ]) rotate(-90, [ 0, 0, 1 ]) difference()
+            {
+                minkowski()
+                {
+                    mod_template();
+                    translate([ 0, 1, -1 ]) cube([ 3, 4, 4 ], center = true);
+                };
+                translate([ -25, -1, BOX_H - 2 ]) cube(50);
+                translate([ -25, -1, -50 ]) cube(50);
+            };
             // params: thickness, w_mid, w_side, sides_offset, sides_height, wall)
             //  cutout
-            module_bay_template(3, MOD_W / 2 + 0.2, 5.1, 3, 15.2, false);
+            rotate(-90, [ 0, 0, 1 ]) minkowski()
+            {
+                mod_template();
+                translate([ 0, -1.5, 0 ]) cube([ 0.1, 3, 0.1 ], center = true);
+            };
+            for (i = MODBAY_SCREW_COORDINATES)
+            {
+                insert_hole(i);
+            };
         };
     };
 };
@@ -402,9 +360,8 @@ module mod_cutout(positive = true)
     };
 };
 
-module mod_template(screw_coordinates)
+module mod_template()
 {
-
     module mod_center()
     {
         translate([ 0, 0, 0 ])
@@ -433,13 +390,18 @@ module mod_template(screw_coordinates)
         translate([ 8.4, 0, 18.7 ]) rotate(90, [ 0, 0, 1 ]) add_corner_concave(1, 3);
     };
 
+    union()
+    {
+        half_module();
+        mirror([ 1, 0, 0 ]) half_module();
+    };
+};
+
+module mod_template_w_screwholes(screw_coordinates)
+{
     difference()
     {
-        union()
-        {
-            half_module();
-            mirror([ 1, 0, 0 ]) half_module();
-        };
+        mod_template();
         for (i = screw_coordinates)
         {
             translate(i) rotate(90, [ 1, 0, 0 ]) screw_hole();
@@ -608,11 +570,16 @@ module mod_snap_bottom_chamfer()
         translate([ 7.6, 0, 0 ]) cube(3);
     };
 };
+
 // Modbay module clip
 /////////////////////
 
 if (PART == "module_snap")
 {
+    render()
+    {
+        union(){};
+    };
     render()
     {
         union()
@@ -622,7 +589,7 @@ if (PART == "module_snap")
                 union()
                 {
                     // screw positions is overridden
-                    mod_template(MBCs[0]);
+                    mod_template_w_screwholes(MBCs[0]);
                     clip_tip();
                 };
                 clip_lock(false);
@@ -650,6 +617,7 @@ if (PART == "module_snap")
         };
     };
 };
+
 //		cylinder(r=100,h=1);
 //		linear_extrude (3)
 //			text("Sry, not designed yet. :(",halign="center",valign="center");
