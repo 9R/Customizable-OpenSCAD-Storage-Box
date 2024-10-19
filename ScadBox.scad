@@ -7,6 +7,9 @@ PART = "container"; //[container, lid, modules]
 // Select module to render. Only applies if model is selected above
 MODULE = "module_snap"; //[module_snap, module_hinge_knuckle, module_hinge_leaf]
 
+// Generate Snap module for lid. If false snap module will interconnect boxes
+SNAP_MODULE_LID = true;
+
 /*[Dimensions]*/
 // Add a top rim
 RIM = true;
@@ -451,6 +454,20 @@ module clip_tip(positive)
     };
 };
 
+module clip_tip_lid()
+{
+    difference()
+    {
+        hull()
+        {
+            translate([ 0, 2, 1 ]) cube([ 15, 2, 2 ], center = true);
+            translate([ 6.5, 2, 3.5 ]) rotate(90, [ 1, 0, 0 ]) cylinder(d = 2, h = 2, center = true);
+            translate([ -6.5, 2, 3.5 ]) rotate(90, [ 1, 0, 0 ]) cylinder(d = 2, h = 2, center = true);
+        };
+        translate([ 0, 2.5, 1.5 ]) cube([ 7, 5, 3 ], center = true);
+    };
+};
+
 module phase_edge(offset, w, a = 45)
 {
     translate([ 0, 0, offset ]) //
@@ -568,11 +585,6 @@ if (PART == "lid")
             translate([ 0, module_bay_offset - 3, 0 ]) lid_snap_lock();
             mirror([ 0, 1, 0 ]) translate([ 0, module_bay_offset - 3, 0 ]) lid_snap_lock();
         };
-        // add hinges
-        for (i = hinge_coordinates)
-        {
-            translate(i) hinge();
-        }
     };
 };
 
@@ -590,7 +602,14 @@ if (PART == "modules")
                 {
                     // screw positions are overridden.
                     mod_template_w_screwholes(MBCs[0]);
-                    translate([ 0, 0, mod_template_height + 1 ]) clip_tip(true);
+                    if (SNAP_MODULE_LID)
+                    {
+                        translate([ 0, 0, mod_template_height + 1 ]) clip_tip_lid(true);
+                    }
+                    else
+                    {
+                        translate([ 0, 0, mod_template_height + 1 ]) clip_tip(true);
+                    };
                 };
 
                 if (SNAP_SOCKET)
@@ -608,7 +627,10 @@ if (PART == "modules")
                                            // top snap hook
                 translate([ 0, 0, BOX_H - 2 ]) minkowski()
                 {
-                    clip_nub();
+                    if (!SNAP_MODULE_LID)
+                    {
+                        clip_nub();
+                    }
                     cube(0.1, center = true);
                 };
                 // reduce tip thickness
@@ -626,6 +648,7 @@ if (PART == "modules")
             };
         };
     }
+
     else if (MODULE == "module_hinge_knuckle")
     {
         render()
@@ -650,6 +673,7 @@ if (PART == "modules")
             };
         };
     }
+
     else if (MODULE == "module_hinge_leaf")
     {
     }
