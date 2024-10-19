@@ -251,29 +251,33 @@ module module_bay()
 
     translate([ 0, BOX_L_OUTER / 2, 0 ]) rotate(-90, [ 0, 0, 1 ]) render()
     {
-        difference()
+        union()
         {
-            // shell
-            translate([ 1, 0, 0 ]) rotate(-90, [ 0, 0, 1 ]) difference()
+            difference()
             {
-                minkowski()
+                // shell
+                translate([ 1, 0, 0 ]) rotate(-90, [ 0, 0, 1 ]) difference()
+                {
+                    minkowski()
+                    {
+                        mod_template();
+                        translate([ 0, 1, -1 ]) cube([ 3, 4, 4 ], center = true);
+                    };
+                    translate([ -25, -1, BOX_H - 2 ]) cube(50);
+                    translate([ -25, -1, -50 ]) cube(50);
+                };
+                //  cutout
+                rotate(-90, [ 0, 0, 1 ]) minkowski()
                 {
                     mod_template();
-                    translate([ 0, 1, -1 ]) cube([ 3, 4, 4 ], center = true);
+                    translate([ 0, -1.5, 0 ]) cube([ 0.1, 3, 0.2 ], center = true);
                 };
-                translate([ -25, -1, BOX_H - 2 ]) cube(50);
-                translate([ -25, -1, -50 ]) cube(50);
+                for (i = MODBAY_SCREW_COORDINATES)
+                {
+                    insert_hole(i);
+                };
             };
-            //  cutout
-            rotate(-90, [ 0, 0, 1 ]) minkowski()
-            {
-                mod_template();
-                translate([ 0, -1.5, 0 ]) cube([ 0.1, 3, 0.2 ], center = true);
-            };
-            for (i = MODBAY_SCREW_COORDINATES)
-            {
-                insert_hole(i);
-            };
+            translate([ 1.5, 0, 1.5 ]) cube([ 3, 7.5, 3 ], center = true);
         };
     };
 };
