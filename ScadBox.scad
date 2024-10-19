@@ -323,9 +323,9 @@ module lid_snap_lock()
 {
     union()
     {
-        translate([ 0, 2.5, 0 ]) cube([ 15 + 2 * MODBAY_GAP, 5, 2.1 ], center = true);
-        translate([ 7.5 + MODBAY_GAP, 0, LID_H ]) rotate(180, [ 0, 1, 0 ]) cube([ 4 + 2 * MODBAY_GAP, 5, LID_H ]);
-        translate([ -3.5 + MODBAY_GAP, 0, LID_H ]) rotate(180, [ 0, 1, 0 ]) cube([ 4 + 2 * MODBAY_GAP, 5, LID_H ]);
+        translate([ 0, 5.5, 0 ]) cube([ 15 + 2 * MODBAY_GAP, 5, 2.1 ], center = true);
+        translate([ 7.5 + MODBAY_GAP, 0, 3 ]) rotate(180, [ 0, 1, 0 ]) cube([ 4 + 2 * MODBAY_GAP, 5, LID_H ]);
+        translate([ -3.5 + MODBAY_GAP, 0, 3 ]) rotate(180, [ 0, 1, 0 ]) cube([ 4 + 2 * MODBAY_GAP, 5, LID_H ]);
     };
 };
 
