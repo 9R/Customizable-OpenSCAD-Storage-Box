@@ -1,8 +1,11 @@
-$fn = $preview ? 64 : 64;
+$fn = $preview ? 50 : 50;
 
 /*[Part]*/
 // Select part to render
-PART = "container"; //[container, lid, module_snap]
+PART = "container"; //[container, lid, modules]
+
+// Select module to render. Only applies if model is selected above
+MODULE = "module_snap"; //[module_snap, module_hinge_knuckle, module_hinge_leaf]
 
 /*[Dimensions]*/
 // Add a top rim
@@ -54,10 +57,13 @@ FIXTURE_W = 5; //[3:1:10]
 FIXTURE_THICKNESS = 4; //[3:1:10]
 
 // Diamenter of Lock Bolts
-LOCK_BOLT_D = 1.3; //[1:0.1:4]
+HINGE_BOLT_D = 1.1; //[1:0.1:4]
 
 // Screw insert Diameter
 INSERT_D = 4; //[3:0.5:8]
+
+// Add Module bottom snap socket
+SNAP_SOCKET = true;
 
 /*[Hidden]*/
 module __customizer_limit__() {};
@@ -85,6 +91,9 @@ BOX_H = BOX_H_OUTER;                     // Box Height
 // width module center
 MOD_W = 15;
 
+// module bay gap
+MODBAY_GAP = 0.1;
+
 POST_OFFSET = 10;
 
 // Offset between snapping parts
@@ -94,7 +103,7 @@ PART_OFFSET = 0.3;
 // Derived Variables
 ///////////////////////////////////////////////////////////////////////////////
 
-modbay_offset = BOX_L / 2 + CORNER_RADIUS;
+module_bay_offset = BOX_L / 2 + CORNER_RADIUS;
 
 hinge_offset = BOX_L / 2 + CORNER_RADIUS;
 hinge_coordinates = [[MODBAY_W / 2 - FIXTURE_W, hinge_offset, 0], [-MODBAY_W / 2, hinge_offset, 0]];
@@ -182,23 +191,21 @@ module box_rim()
     };
 };
 
-module modbay_cutout(offset)
+module module_bay_cutout(offset)
 {
     cut_depth = MODBAY_DEPTH;
-    cut_offset = offset - cut_depth / 2;
-    echo(cut_depth);
-    echo(cut_offset);
-    width = 15;
-    width_l = 30;
-    translate([ -width / 2, cut_offset, 0 ])
+    cut_position_y = offset - cut_depth / 2;
+    width = MOD_W + MODBAY_GAP;
+
+    translate([ -width / 2, cut_position_y, 0 ])
     {
         cube([ width, cut_depth, BOX_H * 2 ]);
     };
 
-    translate([ 0, modbay_offset - 4, 0 ]) minkowski()
+    translate([ 0, module_bay_offset - 4, 0 ]) minkowski()
     {
         mod_template();
-        translate([ 0, 0, 0 ]) cube([ .1, 4, 2 ], center = true);
+        translate([ 0, 0, 0 ]) cube([ MODBAY_GAP, 4, 2 ], center = true);
     };
 };
 
@@ -254,12 +261,11 @@ module module_bay()
                 translate([ -25, -1, BOX_H - 2 ]) cube(50);
                 translate([ -25, -1, -50 ]) cube(50);
             };
-            // params: thickness, w_mid, w_side, sides_offset, sides_height, wall)
             //  cutout
             rotate(-90, [ 0, 0, 1 ]) minkowski()
             {
                 mod_template();
-                translate([ 0, -1.5, 0 ]) cube([ 0.1, 3, 0.1 ], center = true);
+                translate([ 0, -1.5, 0 ]) cube([ 0.1, 3, 0.2 ], center = true);
             };
             for (i = MODBAY_SCREW_COORDINATES)
             {
@@ -284,45 +290,21 @@ module division(count, length, width)
 // Lid modules
 //////////////
 
-module hinge()
+module hinge_knuckle()
 {
-    difference()
+    rotate(90, [ 0, 1, 0 ]) difference()
     {
         union()
         {
-            // hinge lever
-            translate([ 0, 0, 6 ])
+            cylinder(h = MOD_W, d = 3.5, center = true);
+            hull()
             {
-                cube([ FIXTURE_W, FIXTURE_THICKNESS, LID_H - 3 ]);
-            };
-            rotate(90, [ 0, 1, 0 ])
-            {
-                translate([ -3 - LID_H, FIXTURE_THICKNESS / 2, 0 ])
-                {
-                    cylinder(r = FIXTURE_THICKNESS / 2, h = FIXTURE_W);
-                };
-            };
-            // upper rounding
-            translate([ 0, 0, FIXTURE_THICKNESS ])
-            {
-                rotate(90, [ 0, 1, 0 ])
-                {
-                    intersection()
-                    {
-                        cylinder(r = FIXTURE_THICKNESS, h = FIXTURE_W);
-                        cube([ FIXTURE_W * 2, FIXTURE_THICKNESS * 2, FIXTURE_W ]);
-                    };
-                };
+                translate([ 1.0, 0, 0 ]) cube(size = [ 3, 3, MOD_W ], center = true);
+                translate([ 3.5, 3, 0 ]) cube(size = [ 1, 3, MOD_W ], center = true);
             };
         };
-        // add holes for bolt
-        translate([ -1, FIXTURE_THICKNESS / 2, LID_H + 3 ])
-        {
-            rotate(90, [ 0, 1, 0 ])
-            {
-                cylinder(r = LOCK_BOLT_D, h = FIXTURE_W * 2);
-            };
-        };
+        cylinder(h = MOD_W, d = HINGE_BOLT_D, center = true);
+        translate([ -2.25, 0, 0 ]) cube(MOD_W / 2, center = true);
     };
 };
 
@@ -337,27 +319,52 @@ module lid_phase()
     };
 };
 
-// Module bay modules
-/////////////////////
+module lid_snap_lock()
+{
+    union()
+    {
+        translate([ 0, 2.5, 0 ]) cube([ 15 + 2 * MODBAY_GAP, 5, 2.1 ], center = true);
+        translate([ 7.5 + MODBAY_GAP, 0, LID_H ]) rotate(180, [ 0, 1, 0 ]) cube([ 4 + 2 * MODBAY_GAP, 5, LID_H ]);
+        translate([ -3.5 + MODBAY_GAP, 0, LID_H ]) rotate(180, [ 0, 1, 0 ]) cube([ 4 + 2 * MODBAY_GAP, 5, LID_H ]);
+    };
+};
 
-module mod_cutout(positive = true)
+//  Module bay modules
+//////////////////////
+
+module mod_clip_tip_half(positive = true)
 {
     // dimensions
     lock_w = 15;
     corner_r = 3;
     thickness = 3;
-    lock_offset = 0.1;
+    lock_offset = 0.2;
     lock_height = 10;
-    w = positive ? lock_w : lock_w + lock_offset;
-    r = positive ? corner_r : corner_r + lock_offset;
-    h = positive ? lock_height : lock_height + lock_offset;
-    hull()
-    {
-        cube([ w / 2, thickness, 1 ]);
 
-        translate([ 0, 0, h ]) cube([ 1, thickness, 1 ]);
-        translate([ w / 2 - r, corner_r, 8 ]) rotate(90, [ 1, 0, 0 ]) cylinder(r = r, h = thickness);
+    module shape()
+    {
+        hull()
+        {
+            cube([ MOD_W / 2, thickness, 1 ]);
+
+            translate([ 0, 0, lock_height ]) cube([ 1, thickness, 1 ]);
+            translate([ lock_w / 2 - corner_r, corner_r, 8 ]) rotate(90, [ 1, 0, 0 ])
+                cylinder(r = corner_r, h = thickness);
+        };
     };
+
+    if (positive)
+    {
+        shape();
+    }
+    else
+    {
+        minkowski()
+        {
+            shape();
+            cube(size = lock_offset, center = true);
+        };
+    }
 };
 
 module mod_template()
@@ -428,19 +435,19 @@ module clip_nub()
     };
 };
 
-module clip_tip()
+module clip_tip(positive)
 {
-    radius = 2.9;
-    w = 14.8;
-    h = 7.8;
-    coord = [[w / 2 - radius, 3, h], [-w / 2 + radius, 3, h]];
     difference()
     {
-        translate([ 0, -1, mod_template_height ]) clip_lock(true);
-        translate([ 0, 0, mod_template_height ])
+        union()
         {
-            clip_nub();
+            mod_clip_tip_half(positive);
+            mirror([ 1, 0, 0 ])
+            {
+                mod_clip_tip_half(positive);
+            };
         };
+        clip_nub();
     };
 };
 
@@ -455,15 +462,21 @@ module phase_edge(offset, w, a = 45)
     };
 };
 
-module clip_lock(positive)
+module flex_joint()
 {
-    translate([ 0, 1, 0 ])
+    minkowski()
     {
-        mod_cutout(positive);
-        mirror([ 1, 0, 0 ])
-        {
-            mod_cutout(positive);
-        };
+        cube([ 25, 3.8, 2 ], center = true);
+        sphere(d = 1);
+    };
+};
+
+module mod_snap_bottom_chamfer()
+{
+    hull()
+    {
+        translate([ 3.5, 0, -3 ]) cube(3);
+        translate([ 7.6, 0, 0 ]) cube(3);
     };
 };
 
@@ -509,10 +522,10 @@ if (PART == "container")
                 if (MODULE_BAY)
                 {
                     // make space for module bay
-                    modbay_cutout(modbay_offset);
+                    module_bay_cutout(module_bay_offset);
                     mirror([ 0, 1, 0 ])
                     {
-                        modbay_cutout(modbay_offset);
+                        module_bay_cutout(module_bay_offset);
                     };
                 }
             };
@@ -542,17 +555,18 @@ if (PART == "lid")
             // lid with interlocking ledge
             union()
             {
-                base_plate(BOX_L, BOX_W, LID_H);
                 if (RIM)
                 {
-                    base_plate(BOX_L + RIM_W, BOX_W + RIM_W, LID_H - 2);
+                    base_plate(BOX_L, BOX_W, 3);
+                    translate([ 0, 0, 3 - LID_H ]) base_plate(BOX_L + RIM_W, BOX_W + RIM_W, LID_H - 2);
+                }
+                else
+                {
+                    translate([ 0, 0, 3 - LID_H ]) base_plate(BOX_L, BOX_W, LID_H);
                 };
             };
-            // make space for latch / hinge
-            modbay_cutout(modbay_offset);
-            lid_phase();
-            mirror([ 0, 1, 0 ]) modbay_cutout(modbay_offset);
-            mirror([ 1, 0, 0 ]) lid_phase();
+            translate([ 0, module_bay_offset - 3, 0 ]) lid_snap_lock();
+            mirror([ 0, 1, 0 ]) translate([ 0, module_bay_offset - 3, 0 ]) lid_snap_lock();
         };
         // add hinges
         for (i = hinge_coordinates)
@@ -562,61 +576,84 @@ if (PART == "lid")
     };
 };
 
-module mod_snap_bottom_chamfer()
+if (PART == "modules")
 {
-    hull()
+    // Modbay module clip
+    /////////////////////
+    if (MODULE == "module_snap")
     {
-        translate([ 3.5, 0, -3 ]) cube(3);
-        translate([ 7.6, 0, 0 ]) cube(3);
-    };
-};
-
-// Modbay module clip
-/////////////////////
-
-if (PART == "module_snap")
-{
-    render()
-    {
-        union(){};
-    };
-    render()
-    {
-        union()
+        render()
         {
             difference()
             {
                 union()
                 {
-                    // screw positions is overridden
+                    // screw positions are overridden.
                     mod_template_w_screwholes(MBCs[0]);
-                    clip_tip();
+                    translate([ 0, 0, mod_template_height + 1 ]) clip_tip(true);
                 };
-                clip_lock(false);
-                phase_edge(32, 15);
-                mod_snap_bottom_chamfer();
-                mirror([ 1, 0, 0 ]) mod_snap_bottom_chamfer();
-                //                translate([ -4, 0, -2 ]) rotate(90, [ 0, 0, 1 ])
-                // #phase_edge(0, 15, 40);
-                // flex-joint
-                translate([ 0, 0, 19.2 ])
+
+                if (SNAP_SOCKET)
                 {
-                    minkowski()
-                    {
-                        cube([ 25, 3.5, 2 ], center = true);
-                        sphere(d = 1);
-                    };
+                    // bottom snap slot
+                    translate([ 0, 1, 0 ]) clip_tip(false);
+                    mod_snap_bottom_chamfer();
+                    mirror([ 1, 0, 0 ]) mod_snap_bottom_chamfer();
+                }
+                // flex-joint:
+                translate([ 0, 0, 19.2 ]) flex_joint();
+                // phased edges:
+                phase_edge(BOX_H + 8, 15); // clip tip
+                phase_edge(-3, 10, 47);    // bottom nub
+                                           // top snap hook
+                translate([ 0, 0, BOX_H - 2 ]) minkowski()
+                {
+                    clip_nub();
+                    cube(0.1, center = true);
                 };
-            };
-            difference()
-            {
-                clip_nub();
-                translate(MBCs[0][0]) rotate(90, [ 1, 0, 0 ]) screw_hole();
-                phase_edge(-3, 10, 47);
+                // reduce tip thickness
+                translate([ 0, -6.4, BOX_H + 3 ]) cube(size = 15, center = true);
+                translate([ 6, 3.5, 10 ]) minkowski()
+                {
+                    cube([ MOD_W / 4, 1, 3 ], center = true);
+                    sphere(r = 1);
+                };
+                translate([ -6, 3.5, 10 ]) minkowski()
+                {
+                    cube([ MOD_W / 4, 1, 3 ], center = true);
+                    sphere(r = 1);
+                };
             };
         };
-    };
-};
+    }
+    else if (MODULE == "module_hinge_knuckle")
+    {
+        render()
+        {
+            difference()
+            {
+                union()
+                {
+                    mod_template_w_screwholes(MBCs[0]);
+                    translate([ 0, -1.5, BOX_H - .5 ]) hinge_knuckle();
+                };
+
+                if (SNAP_SOCKET)
+                {
+                    // bottom snap slot
+                    translate([ 0, 1, 0 ]) clip_tip(false);
+                    mod_snap_bottom_chamfer();
+                    mirror([ 1, 0, 0 ]) mod_snap_bottom_chamfer();
+                }
+                translate([ 0, -1.5, BOX_H - .5 ]) rotate(90, [ 0, 1, 0 ])
+                    cylinder(h = MOD_W / 2, d = 4.5, center = true);
+            };
+        };
+    }
+    else if (MODULE == "module_hinge_leaf")
+    {
+    }
+}
 
 //		cylinder(r=100,h=1);
 //		linear_extrude (3)
