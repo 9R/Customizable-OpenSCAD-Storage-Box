@@ -374,6 +374,43 @@ module mod_clip_tip_half(positive = true)
     }
 };
 
+module mod_template_low()
+{
+    module mod_center()
+    {
+        translate([ 0, 0, 8 ])
+        {
+            cube([ MOD_W / 2, 3, BOX_H - 10 ]);
+        };
+    };
+
+    module mod_side()
+    {
+        translate([ 0, 0, 3 ])
+        {
+            hull()
+            {
+                translate([ 9.5, 3, 11.7 ]) rotate(90, [ 1, 0, 0 ]) cylinder(d = 6, h = 3);
+                translate([ 11.5, 3, 6 ]) rotate(90, [ 1, 0, 0 ]) cylinder(d = 2, h = 3);
+                translate([ 0, 0, 5 ]) cube([ MOD_W / 2, 3, 9.7 ]);
+            };
+        };
+    };
+
+    module half_module()
+    {
+        mod_center();
+        mod_side();
+        translate([ 8.4, 0, 18.7 ]) rotate(90, [ 0, 0, 1 ]) add_corner_concave(1, 3);
+    };
+
+    union()
+    {
+        half_module();
+        mirror([ 1, 0, 0 ]) half_module();
+    };
+};
+
 module mod_template()
 {
     module mod_center()
@@ -411,11 +448,18 @@ module mod_template()
     };
 };
 
-module mod_template_w_screwholes(screw_coordinates)
+module mod_template_w_screwholes(screw_coordinates, low = true)
 {
     difference()
     {
-        mod_template();
+        if (low)
+        {
+            mod_template_low();
+        }
+        else
+        {
+            mod_template();
+        };
         for (i = screw_coordinates)
         {
             translate(i) rotate(90, [ 1, 0, 0 ]) screw_hole();
@@ -460,13 +504,16 @@ module clip_tip(positive)
 
 module clip_tip_lid()
 {
+    thickness = 3;
     difference()
     {
         hull()
         {
-            translate([ 0, 2, 1 ]) cube([ 15, 2, 2 ], center = true);
-            translate([ 6.5, 2, 3.5 ]) rotate(90, [ 1, 0, 0 ]) cylinder(d = 2, h = 2, center = true);
-            translate([ -6.5, 2, 3.5 ]) rotate(90, [ 1, 0, 0 ]) cylinder(d = 2, h = 2, center = true);
+            translate([ 0, thickness / 2, 1 ]) cube([ 15, thickness, 2 ], center = true);
+            translate([ 6.5, thickness / 2, 3.5 ]) rotate(90, [ 1, 0, 0 ])
+                cylinder(d = 2, h = thickness, center = true);
+            translate([ -6.5, thickness / 2, 3.5 ]) rotate(90, [ 1, 0, 0 ])
+                cylinder(d = 2, h = thickness, center = true);
         };
         translate([ 0, 2.5, 1.5 ]) cube([ 7, 5, 3 ], center = true);
     };
@@ -605,7 +652,8 @@ if (PART == "modules")
                 union()
                 {
                     // screw positions are overridden.
-                    mod_template_w_screwholes(MBCs[0]);
+                    mod_template_w_screwholes(MBCs[1]);
+
                     if (SNAP_MODULE_LID)
                     {
                         translate([ 0, 0, mod_template_height + 1 ]) clip_tip_lid();
@@ -616,39 +664,16 @@ if (PART == "modules")
                     };
                 };
 
-                if (SNAP_SOCKET)
+                // add extra screw hole on high modules
+                if (BOX_H >= 40)
                 {
-                    // bottom snap slot
-                    translate([ 0, 1, 0 ]) clip_tip(false);
-                    mod_snap_bottom_chamfer();
-                    mirror([ 1, 0, 0 ]) mod_snap_bottom_chamfer();
-                }
+                    translate([ 0, 3, BOX_H - 10 ]) rotate(90, [ 1, 0, 0 ]) screw_hole();
+                };
+
                 // flex-joint:
-                translate([ 0, 0, 19.2 ]) flex_joint();
+                translate([ 0, 0, BOX_H - 5.2 ]) flex_joint();
                 // phased edges:
-                phase_edge(BOX_H + 8, 15); // clip tip
-                phase_edge(-3, 10, 47);    // bottom nub
-                                           // top snap hook
-                translate([ 0, 0, BOX_H - 2 ]) minkowski()
-                {
-                    if (!SNAP_MODULE_LID)
-                    {
-                        clip_nub();
-                    }
-                    cube(0.1, center = true);
-                };
-                // reduce tip thickness
-                translate([ 0, -6.4, BOX_H + 3 ]) cube(size = 15, center = true);
-                translate([ 6, 3.5, 10 ]) minkowski()
-                {
-                    cube([ MOD_W / 4, 1, 3 ], center = true);
-                    sphere(r = 1);
-                };
-                translate([ -6, 3.5, 10 ]) minkowski()
-                {
-                    cube([ MOD_W / 4, 1, 3 ], center = true);
-                    sphere(r = 1);
-                };
+                phase_edge(BOX_H + 2.5, 15); // clip tip
             };
         };
     }
