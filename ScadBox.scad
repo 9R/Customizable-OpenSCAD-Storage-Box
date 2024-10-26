@@ -10,6 +10,9 @@ MODULE = "module_snap"; //[module_snap, module_hinge_knuckle, module_hinge_leaf]
 // Generate Snap module for lid. If false snap module will interconnect boxes
 SNAP_MODULE_LID = true;
 
+// Generate counter sunk screw holes. If false snap module will have small nubs
+SNAP_MODULE_SCREWHOLES = true;
+
 /*[Dimensions]*/
 // Add a top rim
 RIM = true;
@@ -244,7 +247,7 @@ module module_bay()
         {
             rotate(90, [ 0, 1, 0 ])
             {
-                cylinder(d = INSERT_D, h = 3, center = true);
+                cylinder(d1 = INSERT_D, d2 = INSERT_D + 0.3, h = 3, center = true);
             };
         };
     };
@@ -277,7 +280,7 @@ module module_bay()
                     insert_hole(i);
                 };
             };
-            translate([ 1.5, 0, 1.5 ]) cube([ 3, 7.5, 3 ], center = true);
+            translate([ 1.5, 0, 1.4 ]) cube([ 3, 7.5, 2.8 ], center = true);
         };
     };
 };
@@ -448,22 +451,35 @@ module mod_template()
     };
 };
 
-module mod_template_w_screwholes(screw_coordinates, low = true)
+module mod_template_w_connector(screw_coordinates, low = true)
 {
     difference()
     {
-        if (low)
+        union()
         {
-            mod_template_low();
+            if (low)
+            {
+                mod_template_low();
+            }
+            else
+            {
+                mod_template();
+            };
+            if (!SNAP_MODULE_SCREWHOLES)
+            {
+                for (i = screw_coordinates)
+                {
+                    translate(i) rotate(90, [ 1, 0, 0 ]) cylinder(h = 5.5, d1 = INSERT_D - 0.2, d2 = INSERT_D + 0.2);
+                };
+            };
+        };
+        if (SNAP_MODULE_SCREWHOLES)
+        {
+            for (i = screw_coordinates)
+            {
+                translate(i) rotate(90, [ 1, 0, 0 ]) screw_hole();
+            };
         }
-        else
-        {
-            mod_template();
-        };
-        for (i = screw_coordinates)
-        {
-            translate(i) rotate(90, [ 1, 0, 0 ]) screw_hole();
-        };
     };
 };
 
@@ -652,7 +668,7 @@ if (PART == "modules")
                 union()
                 {
                     // screw positions are overridden.
-                    mod_template_w_screwholes(MBCs[1]);
+                    mod_template_w_connector(MBCs[1]);
 
                     if (SNAP_MODULE_LID)
                     {
@@ -678,6 +694,8 @@ if (PART == "modules")
         };
     }
 
+    // Modbay module hinge_knuckle
+    //////////////////////////////
     else if (MODULE == "module_hinge_knuckle")
     {
         render()
@@ -686,7 +704,7 @@ if (PART == "modules")
             {
                 union()
                 {
-                    mod_template_w_screwholes(MBCs[0]);
+                    mod_template_w_connector(MBCs[0]);
                     translate([ 0, -1.5, BOX_H - .5 ]) hinge_knuckle();
                 };
 
@@ -703,6 +721,8 @@ if (PART == "modules")
         };
     }
 
+    // Modbay module hinge_leaf
+    ///////////////////////////
     else if (MODULE == "module_hinge_leaf")
     {
     }
